@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-telemetry}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-telemetry}
+      POSTGRES_DB: ${POSTGRES_DB:-telemetry_highway}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-telemetry}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-telemetry}:${POSTGRES_PASSWORD:-telemetry}@postgres:5432/${POSTGRES_DB:-telemetry_highway}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATA_REGION: ${DATA_REGION:-global}
+      DASHBOARD_BASE_URL: ${DASHBOARD_BASE_URL:-http://localhost:5173}
+      RETENTION_RAW_TELEMETRY_DAYS: ${RETENTION_RAW_TELEMETRY_DAYS:-7}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-alerts@telemetry-highway.local}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker.main"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-telemetry}:${POSTGRES_PASSWORD:-telemetry}@postgres:5432/${POSTGRES_DB:-telemetry_highway}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      DASHBOARD_BASE_URL: ${DASHBOARD_BASE_URL:-http://localhost:5173}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-alerts@telemetry-highway.local}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+  # OS monitoring agent. Not started by default (needs enrollment first).
+  # Enroll:  docker compose run --rm agent enroll --endpoint http://api:8000 --device-id dev_xxx --token <tok>
+  # Run:     docker compose --profile agent up agent
+  agent:
+    build: ./agents/python
+    profiles: ["agent"]
+    environment:
+      TH_AGENT_CONFIG: /data/agent.json
+    volumes:
+      - agentdata:/data
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  agentdata:

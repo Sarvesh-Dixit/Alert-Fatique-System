@@ -1,0 +1,26 @@
+{
+  "name": "@telemetry-highway/node",
+  "version": "0.1.0",
+  "description": "Node.js / TypeScript SDK for the Telemetry Highway observability platform",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": ["dist", "src"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+backend/test_telemetry.db
+
+# Node
+node_modules/
+dist/
+sdks/node/dist/
+
+# Env
+.env
+*.local
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
