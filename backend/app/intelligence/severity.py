@@ -48,13 +48,16 @@ def compute_severity(sig: SeveritySignals) -> str:
     if severity_rank(severity) >= severity_rank("WARNING"):
         if sig.event_count >= settings.severity_high_event_count:
             severity = max_severity(severity, "HIGH")
-        if sig.event_count >= settings.severity_critical_event_count:
-            severity = max_severity(severity, "CRITICAL")
-        if sig.instance_count >= settings.severity_critical_instance_count:
-            severity = max_severity(severity, "CRITICAL")
-        if sig.service_count >= settings.severity_critical_service_count:
-            severity = max_severity(severity, "CRITICAL")
         if sig.spike_multiplier >= settings.spike_multiplier:
             severity = max_severity(severity, "HIGH")
+
+        # Only escalate to CRITICAL if it is an ERROR-like signal with significant event volume
+        if severity_rank(severity) >= severity_rank("ERROR") and sig.event_count >= settings.severity_high_event_count:
+            if sig.event_count >= settings.severity_critical_event_count:
+                severity = max_severity(severity, "CRITICAL")
+            if sig.instance_count >= settings.severity_critical_instance_count:
+                severity = max_severity(severity, "CRITICAL")
+            if sig.service_count >= settings.severity_critical_service_count:
+                severity = max_severity(severity, "CRITICAL")
 
     return severity

@@ -64,6 +64,23 @@ def test_kpis(client):
     assert kpis["notifications_sent"] >= 1
     assert kpis["noise_reduction_ratio"] >= 95.0
     assert kpis["active_incidents"] >= 1
+    assert kpis["total_events"] == 200
+    assert kpis["actionable_incidents"] >= 1
+    assert kpis["suppressed_events"] is not None
+
+
+def test_cooldown_matrix(client):
+    token, org_id = register_org(client)
+    h = _headers(token)
+    client.post(f"/api/v1/organizations/{org_id}/demo/simulate/error-burst?count=500&apps=1", headers=h)
+
+    cooldowns = client.get(f"/api/v1/organizations/{org_id}/cooldown-matrix", headers=h).json()
+    assert len(cooldowns) >= 1
+    cd = cooldowns[0]
+    assert cd["incident_id"] is not None
+    assert cd["suppressed_count"] >= 400
+    assert cd["remaining_seconds"] > 0
+    assert cd["status"] == "ACTIVE_SUPPRESSION"
 
 
 # --- Scenario 7: incident resolves -------------------------------------------

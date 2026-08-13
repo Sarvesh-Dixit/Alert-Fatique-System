@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Radio } from "lucide-react";
 
 export default function Login() {
   const { login, register, user } = useAuth();
@@ -41,7 +42,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-3xl font-bold">🛰️ Telemetry Highway</div>
+          <div className="text-3xl font-bold flex items-center justify-center gap-2"><Radio className="w-6 h-6 text-neonCyan animate-pulse" /> Telemetry Highway</div>
           <div className="text-white/40 mt-1">Secure multi-tenant observability</div>
         </div>
 

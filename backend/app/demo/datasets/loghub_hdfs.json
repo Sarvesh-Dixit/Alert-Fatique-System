@@ -1,0 +1,1442 @@
+[
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_2026847926404610461 on disk",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "2026847926404610461",
+      "ip": "10.250.19.100",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "2287010195568088798",
+      "ip": "10.250.19.101",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_1293143515607798169 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "1293143515607798169",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.109",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "VerificationException",
+      "block_id": "5661079826957838872",
+      "ip": "10.250.19.109",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_7604115266222097961 on 10.250.19.110:54110",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "7604115266222097961",
+      "ip": "10.250.19.110",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_6435016639521185066 on 10.250.19.104:50010",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "6435016639521185066",
+      "ip": "10.250.19.104",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_4897929836277613434 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "4897929836277613434",
+      "ip": "10.250.19.105",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_9828732236256693627 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "9828732236256693627",
+      "ip": "10.250.19.105",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_1892051149799221885 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "InvalidBlockException",
+      "block_id": "1892051149799221885",
+      "ip": "10.250.19.105",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_8444444408448525222 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "8444444408448525222",
+      "ip": "10.250.19.100",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_9975408689036172152 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "9975408689036172152",
+      "ip": "10.250.19.106",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_8649907784222096193 on disk",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "8649907784222096193",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "7498528202505966380",
+      "ip": "10.250.19.101",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_3669132812676222602 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "3669132812676222602",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.107",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "3563853979923510231",
+      "ip": "10.250.19.107",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_4276793867839745544 on 10.250.19.103:54106",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "4276793867839745544",
+      "ip": "10.250.19.103",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_6856640982517285491 on 10.250.19.102:50020",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "6856640982517285491",
+      "ip": "10.250.19.102",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_4499858741419224946 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "4499858741419224946",
+      "ip": "10.250.19.104",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_8086441943164855461 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "8086441943164855461",
+      "ip": "10.250.19.100",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_3909540858428095310 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "InvalidBlockException",
+      "block_id": "3909540858428095310",
+      "ip": "10.250.19.106",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_9422194129764808876 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "9422194129764808876",
+      "ip": "10.250.19.109",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_5604595648712070165 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "5604595648712070165",
+      "ip": "10.250.19.106",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_2287862428927733726 on disk",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "2287862428927733726",
+      "ip": "10.250.19.103",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "IOException",
+      "block_id": "9280954483357112007",
+      "ip": "10.250.19.109",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_2275885125495594992 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "2275885125495594992",
+      "ip": "10.250.19.108",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.101",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "1434571846591639690",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_7276331413508044428 on 10.250.19.106:50010",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "7276331413508044428",
+      "ip": "10.250.19.106",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_6496100617597340962 on 10.250.19.107:54106",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "VerificationException",
+      "block_id": "6496100617597340962",
+      "ip": "10.250.19.107",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_9692390486492319469 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "9692390486492319469",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_3461027963323909904 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "3461027963323909904",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_5010001701844210440 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "InvalidBlockException",
+      "block_id": "5010001701844210440",
+      "ip": "10.250.19.102",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_7660123708883814348 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "7660123708883814348",
+      "ip": "10.250.19.104",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_1981466611638729327 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "1981466611638729327",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_2834631103129155783 on disk",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "2834631103129155783",
+      "ip": "10.250.19.102",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "9794482922889723490",
+      "ip": "10.250.19.108",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_5506592233125569595 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "5506592233125569595",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.104",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "VerificationException",
+      "block_id": "8441184182814378041",
+      "ip": "10.250.19.104",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_9098209198974288553 on 10.250.19.109:50010",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "9098209198974288553",
+      "ip": "10.250.19.109",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_5482470796599380943 on 10.250.19.101:50020",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "5482470796599380943",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_5383706197956849164 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "5383706197956849164",
+      "ip": "10.250.19.108",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_9046774531590037763 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "9046774531590037763",
+      "ip": "10.250.19.109",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_5974128472756405854 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "InvalidBlockException",
+      "block_id": "5974128472756405854",
+      "ip": "10.250.19.103",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_7195218732202204094 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "7195218732202204094",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_5773794554946853835 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "5773794554946853835",
+      "ip": "10.250.19.107",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_1590534699672519631 on disk",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "1590534699672519631",
+      "ip": "10.250.19.105",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "3122433790496066819",
+      "ip": "10.250.19.109",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_7528680379936447062 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "7528680379936447062",
+      "ip": "10.250.19.110",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.100",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "VerificationException",
+      "block_id": "9351025640585110982",
+      "ip": "10.250.19.100",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_3195205298122112080 on 10.250.19.104:54110",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "3195205298122112080",
+      "ip": "10.250.19.104",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_2220361388347309107 on 10.250.19.109:54110",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "2220361388347309107",
+      "ip": "10.250.19.109",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_5362405364023218591 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "5362405364023218591",
+      "ip": "10.250.19.106",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_7078043091272496427 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "7078043091272496427",
+      "ip": "10.250.19.106",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_5307542244748820412 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "InvalidBlockException",
+      "block_id": "5307542244748820412",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_7716584848373461050 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "7716584848373461050",
+      "ip": "10.250.19.105",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_2754367521308019712 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "2754367521308019712",
+      "ip": "10.250.19.108",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_2692378448292507489 on disk",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "2692378448292507489",
+      "ip": "10.250.19.104",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "9515622169657364415",
+      "ip": "10.250.19.101",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_1466594991076051941 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "1466594991076051941",
+      "ip": "10.250.19.110",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.103",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "VerificationException",
+      "block_id": "7950414977729979113",
+      "ip": "10.250.19.103",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_5439747823840459287 on 10.250.19.103:54110",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "5439747823840459287",
+      "ip": "10.250.19.103",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_4495410073145288840 on 10.250.19.100:54110",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "VerificationException",
+      "block_id": "4495410073145288840",
+      "ip": "10.250.19.100",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_8231774827842914767 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "8231774827842914767",
+      "ip": "10.250.19.107",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_9829696716179755544 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "9829696716179755544",
+      "ip": "10.250.19.108",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_3736646685292569996 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "InvalidBlockException",
+      "block_id": "3736646685292569996",
+      "ip": "10.250.19.103",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_6000868092203058565 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "6000868092203058565",
+      "ip": "10.250.19.100",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_6388087312575242434 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "6388087312575242434",
+      "ip": "10.250.19.107",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_5683891161603349282 on disk",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "5683891161603349282",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "1626828317375608961",
+      "ip": "10.250.19.110",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_9684691350705202058 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "9684691350705202058",
+      "ip": "10.250.19.109",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.109",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "VerificationException",
+      "block_id": "1366552161069459542",
+      "ip": "10.250.19.109",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_6383426661486795666 on 10.250.19.109:54106",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "6383426661486795666",
+      "ip": "10.250.19.109",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_7177131835542885560 on 10.250.19.105:50020",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "VerificationException",
+      "block_id": "7177131835542885560",
+      "ip": "10.250.19.105",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_2207139051737594022 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "2207139051737594022",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_9568681707902926090 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "9568681707902926090",
+      "ip": "10.250.19.101",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_1675710849873633045 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "InvalidBlockException",
+      "block_id": "1675710849873633045",
+      "ip": "10.250.19.108",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_2221696181401562287 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "2221696181401562287",
+      "ip": "10.250.19.105",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_3628544764405437394 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "3628544764405437394",
+      "ip": "10.250.19.102",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_3790228131093098819 on disk",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "3790228131093098819",
+      "ip": "10.250.19.109",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "9593932619427878378",
+      "ip": "10.250.19.110",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_2064641536759957999 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "2064641536759957999",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.103",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "6578570521896889819",
+      "ip": "10.250.19.103",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_6849812616213417938 on 10.250.19.104:54110",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "6849812616213417938",
+      "ip": "10.250.19.104",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_9376288749193273799 on 10.250.19.100:50010",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "VerificationException",
+      "block_id": "9376288749193273799",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_3551924680123492380 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "3551924680123492380",
+      "ip": "10.250.19.100",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_2206598359916745165 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "IOException",
+      "block_id": "2206598359916745165",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_5075213287439027999 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "InvalidBlockException",
+      "block_id": "5075213287439027999",
+      "ip": "10.250.19.108",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_2031854433932785318 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "2031854433932785318",
+      "ip": "10.250.19.101",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_8697780364772189150 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "8697780364772189150",
+      "ip": "10.250.19.105",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_1385803164556739842 on disk",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "1385803164556739842",
+      "ip": "10.250.19.104",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "4300207669576461504",
+      "ip": "10.250.19.103",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_8195302353946980042 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "8195302353946980042",
+      "ip": "10.250.19.108",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.103",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "VerificationException",
+      "block_id": "2425502938706330585",
+      "ip": "10.250.19.103",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_4802744767555862032 on 10.250.19.100:50020",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "4802744767555862032",
+      "ip": "10.250.19.100",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_9585261207085808424 on 10.250.19.106:50020",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "VerificationException",
+      "block_id": "9585261207085808424",
+      "ip": "10.250.19.106",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_8262248047009149073 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "8262248047009149073",
+      "ip": "10.250.19.101",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_5341349175503144055 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "5341349175503144055",
+      "ip": "10.250.19.103",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_3814888912663820003 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "InvalidBlockException",
+      "block_id": "3814888912663820003",
+      "ip": "10.250.19.103",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_2781307911842557786 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "IOException",
+      "block_id": "2781307911842557786",
+      "ip": "10.250.19.106",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_1640293418962402313 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "1640293418962402313",
+      "ip": "10.250.19.104",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_7267448371482546846 on disk",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "7267448371482546846",
+      "ip": "10.250.19.108",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "9089251550218094950",
+      "ip": "10.250.19.104",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_1352860362262289029 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "1352860362262289029",
+      "ip": "10.250.19.101",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.105",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "VerificationException",
+      "block_id": "8253519653706788313",
+      "ip": "10.250.19.105",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_5717045169608122735 on 10.250.19.101:54110",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "5717045169608122735",
+      "ip": "10.250.19.101",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_3349400463812133037 on 10.250.19.100:54110",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "VerificationException",
+      "block_id": "3349400463812133037",
+      "ip": "10.250.19.100",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_9536924093526147060 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "9536924093526147060",
+      "ip": "10.250.19.108",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_1645394450975654307 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "IOException",
+      "block_id": "1645394450975654307",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_7118669454145275526 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "InvalidBlockException",
+      "block_id": "7118669454145275526",
+      "ip": "10.250.19.101",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_7151001353749350294 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "7151001353749350294",
+      "ip": "10.250.19.106",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.delete: blk_3726937892424007718 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "3726937892424007718",
+      "ip": "10.250.19.108",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DirectoryScanner",
+    "message": "DirectoryScanner: duplicate block blk_7132891487184248574 on disk",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "DirectoryScannerError",
+      "block_id": "7132891487184248574",
+      "ip": "10.250.19.106",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "DataXceiver error: java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "IOException",
+      "block_id": "3775772687936578009",
+      "ip": "10.250.19.106",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "BlockReceiver: exception in receiveBlock blk_2938593070068215148 java.net.SocketTimeoutException: 60000 millis timeout while waiting for channel to be ready for write",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "SocketTimeoutException",
+      "block_id": "2938593070068215148",
+      "ip": "10.250.19.106",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$DataTransfer",
+    "message": "Verification failed for client /10.250.19.110",
+    "metadata": {
+      "instance": "hdfs-node-5",
+      "exception_type": "VerificationException",
+      "block_id": "5078204301377856356",
+      "ip": "10.250.19.110",
+      "port": 50020
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for blk_8320916867829381826 on 10.250.19.102:50010",
+    "metadata": {
+      "instance": "hdfs-node-3",
+      "exception_type": "RedundantBlockRequest",
+      "block_id": "8320916867829381826",
+      "ip": "10.250.19.102",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataBlockScanner",
+    "message": "Verification failed for blk_7122970916297419177 on 10.250.19.110:54106",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "VerificationException",
+      "block_id": "7122970916297419177",
+      "ip": "10.250.19.110",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.FSNamesystem",
+    "message": "BLOCK* NameSystem.addStoredBlock: blk_9780647017656628004 is not found in blockMap",
+    "metadata": {
+      "instance": "hdfs-node-2",
+      "exception_type": "BlockNotFoundException",
+      "block_id": "9780647017656628004",
+      "ip": "10.250.19.103",
+      "port": 54106
+    }
+  },
+  {
+    "severity": "ERROR",
+    "service": "dfs.DataNode$BlockReceiver",
+    "message": "Exception in receiveBlock for block blk_2836649463729022966 java.io.IOException: Broken pipe",
+    "metadata": {
+      "instance": "hdfs-node-1",
+      "exception_type": "IOException",
+      "block_id": "2836649463729022966",
+      "ip": "10.250.19.102",
+      "port": 50010
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode",
+    "message": "Block blk_6638007260876802307 is no longer valid, deleting",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "InvalidBlockException",
+      "block_id": "6638007260876802307",
+      "ip": "10.250.19.101",
+      "port": 54110
+    }
+  },
+  {
+    "severity": "WARN",
+    "service": "dfs.DataNode$DataXceiver",
+    "message": "WriteBlock blk_6808560426851098205 received exception java.io.IOException: Connection reset by peer",
+    "metadata": {
+      "instance": "hdfs-node-4",
+      "exception_type": "IOException",
+      "block_id": "6808560426851098205",
+      "ip": "10.250.19.109",
+      "port": 50020
+    }
+  }
+]

@@ -24,6 +24,8 @@ class NotificationMessage:
     noise_reduction_ratio: float
     dashboard_url: str
     body: str            # pre-rendered plain-text body
+    events_suppressed: int
+    gptrace_score: float | None = None
 
 
 def http_post_json(url: str, payload: dict, timeout: float | None = None) -> int:
@@ -43,11 +45,17 @@ def build_message(incident, kind: str, reason: str = "") -> NotificationMessage:
     prefix = {"created": f"{emoji} INCIDENT", "update": "🔁 INCIDENT UPDATE",
               "resolved": "✅ RESOLVED", "test": "🧪 TEST"}.get(kind, "INCIDENT")
 
+    score = getattr(incident, "gptrace_score", None)
+    score_str = f"GPTrace Score: {score:.4f}" if score is not None else "GPTrace Score: N/A"
+    suppressed = getattr(incident, "events_suppressed", 0)
+
     body = (
         f"{prefix}\n"
         f"{incident.title}\n"
         f"Severity: {incident.severity}\n"
         f"Events: {incident.event_count:,}\n"
+        f"Suppressed Events: {suppressed:,}\n"
+        f"{score_str}\n"
         f"Affected Services: {len(incident.affected_services or [])}\n"
         f"Affected Instances: {len(incident.affected_instances or [])}\n"
         f"Spike: {incident.spike_multiplier}×\n"
@@ -66,6 +74,8 @@ def build_message(incident, kind: str, reason: str = "") -> NotificationMessage:
         noise_reduction_ratio=incident.noise_reduction_ratio,
         dashboard_url=url,
         body=body,
+        events_suppressed=suppressed,
+        gptrace_score=score,
     )
 
 

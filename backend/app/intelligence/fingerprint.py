@@ -12,6 +12,9 @@ numbers, hex, emails, quoted literals, request ids) with stable placeholders,
 then hash ``service | event_type | error_class | signature``.
 
 We deliberately keep meaningful words — only clearly dynamic tokens are masked.
+
+If the GPTrace model (cosine similarity of trace embeddings >= 0.88) does not
+find a match, we fall back to the exact fingerprint hashing defined here.
 """
 from __future__ import annotations
 

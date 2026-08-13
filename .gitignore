@@ -1,22 +1,42 @@
-# Python
+# Secrets & Envs
+.env
+.env.local
+.env.production
+.env.*.local
+*.pem
+*.key
+
+# Python Artifacts
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
 .venv/
 venv/
-*.egg-info/
+ENV/
+env/
 .pytest_cache/
-backend/test_telemetry.db
+.coverage
+htmlcov/
+.ipynb_checkpoints/
 
-# Node
+# Node / Frontend Artifacts
 node_modules/
 dist/
-sdks/node/dist/
+build/
+frontend/dist/
+frontend/build/
+.vercel/
+.npm
+.eslintcache
 
-# Env
-.env
-*.local
-
-# Editor / OS
+# OS / IDE Files
 .DS_Store
-.idea/
+Thumbs.db
 .vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

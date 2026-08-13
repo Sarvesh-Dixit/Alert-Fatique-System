@@ -122,6 +122,7 @@ def _upsert_group(db: Session, ev: dict, now: datetime) -> tuple[ErrorGroup, boo
             affected_regions=[],
             sample_event_id=ev["event_id"],
             sample_message=ev.get("message"),
+            trace_embedding=ev.get("_trace_embedding"),
         )
         db.add(group)
         created = True
@@ -195,6 +196,66 @@ def run_intelligence(db: Session, ev: dict) -> IntelligenceResult:
     now: datetime = ev["timestamp"]
     fp = ev["fingerprint"]
     env = ev.get("environment") or "production"
+    org = ev["organization_id"]
+
+    # 1. Compute trace embedding for the incoming event
+    from app.intelligence.embedding import TraceEmbeddingEngine
+    from datetime import timedelta
+    from sqlalchemy import or_
+
+    embedding = TraceEmbeddingEngine.embed_event(ev)
+    # Store embedding in the event so that if a new group is created, it inherits it
+    ev["_trace_embedding"] = embedding
+
+    # 2. Query recent active error groups in the same organization/environment
+    cutoff = now - timedelta(days=14)
+    stmt = (
+        select(ErrorGroup)
+        .outerjoin(Incident, ErrorGroup.incident_id == Incident.id)
+        .where(
+            ErrorGroup.organization_id == org,
+            ErrorGroup.environment == env,
+            or_(
+                Incident.status.in_(["OPEN", "ACKNOWLEDGED"]),
+                ErrorGroup.last_seen >= cutoff
+            )
+        )
+    )
+    candidates = db.scalars(stmt).all()
+
+    best_similarity = -1.0
+    best_group = None
+
+    for candidate in candidates:
+        cand_embed = candidate.trace_embedding
+        if not cand_embed:
+            cand_text = candidate.sample_message or ""
+            cand_embed = TraceEmbeddingEngine.get_embedding(cand_text)
+            candidate.trace_embedding = cand_embed
+            db.flush()
+
+        similarity = TraceEmbeddingEngine.compute_similarity(embedding, cand_embed)
+        if similarity >= 0.88 and similarity > best_similarity:
+            best_similarity = similarity
+            best_group = candidate
+
+    if best_group is not None:
+        best_group.gptrace_score = best_similarity
+        if best_group.incident_id:
+            inc = db.get(Incident, best_group.incident_id)
+            if inc:
+                inc.gptrace_score = best_similarity
+
+        # Group it under the existing incident/error_group
+        fp = best_group.fingerprint
+        ev["fingerprint"] = fp
+
+        # Update the persisted TelemetryEvent's fingerprint
+        from app.models.telemetry import TelemetryEvent
+        row = db.get(TelemetryEvent, ev["event_id"])
+        if row:
+            row.fingerprint = fp
+            db.flush()
 
     group, group_created = _upsert_group(db, ev, now)
 

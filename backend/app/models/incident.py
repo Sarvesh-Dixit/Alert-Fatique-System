@@ -58,6 +58,8 @@ class ErrorGroup(TimestampMixin, Base):
 
     sample_event_id: Mapped[str | None] = mapped_column(String, nullable=True)
     sample_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    trace_embedding: Mapped[list[float] | None] = mapped_column(JSONType, nullable=True)
+    gptrace_score: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     incident_id: Mapped[str | None] = mapped_column(
         ForeignKey("incidents.id", ondelete="SET NULL"), index=True, nullable=True
@@ -110,6 +112,7 @@ class Incident(TimestampMixin, Base):
     events_suppressed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     notifications_sent: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     noise_reduction_ratio: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    gptrace_score: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Deterministic correlation grouping (multi-service incidents share this)
     correlation_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

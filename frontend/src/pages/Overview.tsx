@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import {
   Cell,
   Pie,
@@ -75,17 +76,17 @@ export default function Overview() {
             <div className="text-white/40 text-sm py-12 text-center">No data yet.</div>
           )}
           <div className="text-xs text-white/50 mt-2">
-            {kpis?.naive_notifications ?? 0} naive notifications → {kpis?.notifications_sent ?? 0} actual
+            {kpis?.naive_notifications ?? 0} naive notifications / {kpis?.notifications_sent ?? 0} actual
           </div>
         </div>
 
         <div className="card lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
             <div className="font-semibold">Active incidents</div>
-            <Link to="/incidents" className="text-accent text-sm">View all →</Link>
+            <Link to="/incidents" className="text-accent text-sm flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
           </div>
           {incidents.length === 0 ? (
-            <div className="text-white/40 text-sm py-8 text-center">No active incidents 🎉</div>
+            <div className="text-white/40 text-sm py-8 text-center">No active incidents — all clear.</div>
           ) : (
             <table className="w-full text-sm">
               <tbody>

@@ -144,6 +144,7 @@ export interface Incident {
   notifications_sent: number;
   noise_reduction_ratio: number;
   correlation_id: string | null;
+  last_notified_at?: string | null;
 }
 export interface TimelineEntry {
   id: string;
@@ -192,6 +193,21 @@ export interface NoiseReductionKPIs {
   active_incidents: number;
   total_incidents: number;
   total_groups: number;
+  total_events?: number;
+  actionable_incidents?: number;
+  suppressed_events?: number;
+}
+export interface CooldownState {
+  incident_id: string;
+  service: string | null;
+  application_name: string | null;
+  title: string;
+  trigger_time: string | null;
+  expiry_time: string | null;
+  remaining_seconds: number;
+  severity: string;
+  suppressed_count: number;
+  status: string;
 }
 export interface DemoScenario {
   id: string;
