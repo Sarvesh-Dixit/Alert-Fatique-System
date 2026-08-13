@@ -27,6 +27,7 @@ class IncidentSummary(BaseModel):
     notifications_sent: int
     noise_reduction_ratio: float
     correlation_id: str | None
+    last_notified_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -98,3 +99,19 @@ class NoiseReductionKPIs(BaseModel):
     active_incidents: int
     total_incidents: int
     total_groups: int
+    total_events: int | None = None
+    actionable_incidents: int | None = None
+    suppressed_events: int | None = None
+
+
+class CooldownState(BaseModel):
+    incident_id: str
+    service: str | None
+    application_name: str | None
+    title: str
+    trigger_time: datetime | None
+    expiry_time: datetime | None
+    remaining_seconds: int
+    severity: str
+    suppressed_count: int
+    status: str

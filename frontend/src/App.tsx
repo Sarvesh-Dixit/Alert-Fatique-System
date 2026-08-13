@@ -1,8 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { useAuth } from "./context/AuthContext";
-import Login from "./pages/Login";
 import Overview from "./pages/Overview";
+import Dashboard from "./pages/Dashboard";
 import Incidents from "./pages/Incidents";
 import IncidentDetail from "./pages/IncidentDetail";
 import Applications from "./pages/Applications";
@@ -13,22 +13,25 @@ import Devices from "./pages/Devices";
 import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
 import PlatformHealth from "./pages/PlatformHealth";
-import Demo from "./pages/Demo";
 import Settings from "./pages/Settings";
+import Demo from "./pages/Demo";
+import Landing from "./pages/Landing";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="p-8 text-white/50">Loading…</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/?auth=login" replace />;
   return <Layout>{children}</Layout>;
 }
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Navigate to="/overview" replace />} />
-      <Route path="/overview" element={<Protected><Overview /></Protected>} />
+      <Route path="/login" element={<Navigate to="/?auth=login" replace />} />
+      <Route path="/signup" element={<Navigate to="/?auth=login" replace />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/overview" element={<Protected><Navigate to="/dashboard" replace /></Protected>} />
+      <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
       <Route path="/incidents" element={<Protected><Incidents /></Protected>} />
       <Route path="/incidents/:incidentId" element={<Protected><IncidentDetail /></Protected>} />
       <Route path="/applications" element={<Protected><Applications /></Protected>} />

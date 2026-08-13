@@ -37,6 +37,7 @@ SCENARIOS = {
     "api-timeout-storm": "API gateway timeout storm",
     "multi-instance-failure": "Same error across many instances (one incident)",
     "auth-failure-storm": "Repeated failed logins → one security incident",
+    "loghub-hdfs-outage": "Real-world HDFS error/warning log outage scenario from LogHub dataset",
 }
 
 
@@ -167,6 +168,7 @@ def simulate(
     scenario: str,
     count: int = Query(default=2000, ge=1, le=20000),
     apps: int = Query(default=3, ge=1, le=10),
+    noise_factor: int = Query(default=1, ge=1, le=10),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -174,6 +176,10 @@ def simulate(
     require_org_member(organization_id, user, db)
     if scenario not in SCENARIOS:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown scenario '{scenario}'")
+
+    if scenario == "loghub-hdfs-outage":
+        from app.demo.simulator import run_loghub_simulation
+        return run_loghub_simulation(db, organization_id, count, noise_factor, apps)
 
     demo_apps = _ensure_demo_apps(db, organization_id, apps)
     events = _generate(scenario, demo_apps, count)

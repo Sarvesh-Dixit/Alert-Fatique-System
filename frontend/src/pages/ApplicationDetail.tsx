@@ -72,7 +72,7 @@ export default function ApplicationDetail() {
             <tbody>
               {events.map((e) => (
                 <tr key={e.event_id} className="border-t border-white/5">
-                  <td className="py-2 text-white/60 whitespace-nowrap">{fmtTime(e.timestamp)}</td>
+                  <td className="py-2 text-white/60 whitespace-nowrap font-mono tracking-tight">{fmtTime(e.timestamp)}</td>
                   <td><SeverityBadge severity={e.severity} /></td>
                   <td className="text-white/70">{e.service ?? "—"}</td>
                   <td className="text-white/80">{e.message ?? "—"}</td>

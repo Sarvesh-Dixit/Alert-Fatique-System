@@ -18,15 +18,21 @@ class SlackProvider(NotificationProvider):
         color = {"CRITICAL": "#dc2626", "HIGH": "#ef4444", "ERROR": "#f97316"}.get(
             message.severity, "#3b82f6"
         )
+        emoji = {"CRITICAL": "🚨", "HIGH": "🔴", "ERROR": "🟠", "WARNING": "🟡"}.get(message.severity, "🔔")
+        score_val = f"{message.gptrace_score:.4f}" if message.gptrace_score is not None else "N/A"
         payload = {
             "attachments": [
                 {
                     "color": color,
-                    "title": f"{message.severity} · {message.title}",
+                    "title": f"{emoji} {message.severity} · {message.title}",
+                    "title_link": message.dashboard_url,
                     "text": message.body,
                     "fields": [
                         {"title": "Events", "value": f"{message.event_count:,}", "short": True},
+                        {"title": "Suppressed", "value": f"{message.events_suppressed:,}", "short": True},
+                        {"title": "GPTrace Match Score", "value": score_val, "short": True},
                         {"title": "Noise Reduction", "value": f"{message.noise_reduction_ratio}%", "short": True},
+                        {"title": "Incident Details Link", "value": f"<{message.dashboard_url}|Click here to view incident>", "short": False},
                     ],
                 }
             ]
@@ -44,13 +50,22 @@ class DiscordProvider(NotificationProvider):
         color = {"CRITICAL": 0xDC2626, "HIGH": 0xEF4444, "ERROR": 0xF97316}.get(
             message.severity, 0x3B82F6
         )
+        emoji = {"CRITICAL": "🚨", "HIGH": "🔴", "ERROR": "🟠", "WARNING": "🟡"}.get(message.severity, "🔔")
+        score_val = f"{message.gptrace_score:.4f}" if message.gptrace_score is not None else "N/A"
         payload = {
             "embeds": [
                 {
-                    "title": f"{message.severity} · {message.title}",
+                    "title": f"{emoji} {message.severity} · {message.title}",
                     "description": message.body,
                     "color": color,
                     "url": message.dashboard_url,
+                    "fields": [
+                        {"name": "Total Events", "value": f"{message.event_count:,}", "inline": True},
+                        {"name": "Suppressed Events", "value": f"{message.events_suppressed:,}", "inline": True},
+                        {"name": "GPTrace Score", "value": score_val, "inline": True},
+                        {"name": "Noise Reduction Ratio", "value": f"{message.noise_reduction_ratio}%", "inline": True},
+                        {"name": "Deep-Link", "value": f"[View on Dashboard]({message.dashboard_url})", "inline": False},
+                    ]
                 }
             ]
         }

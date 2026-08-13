@@ -33,6 +33,18 @@ CORRELATION_RULES: list[tuple[str, set[str]]] = [
         "backend-outage",
         {"connectionerror", "timeouterror", "operationalerror", "database", "connectiontimeout"},
     ),
+    (
+        "hdfs-outage",
+        {
+            "ioexception",
+            "sockettimeoutexception",
+            "verificationexception",
+            "redundantblockrequest",
+            "blocknotfoundexception",
+            "invalidblockexception",
+            "directoryscannererror",
+        },
+    ),
 ]
 
 

@@ -31,6 +31,7 @@ from app.schemas.incident import (
     NoiseReductionKPIs,
     NotificationEntry,
     TimelineEntry,
+    CooldownState,
 )
 from app.schemas.telemetry import TelemetryEventResponse
 
@@ -273,7 +274,63 @@ def noise_reduction_kpis(
         active_incidents=int(active_incidents),
         total_incidents=int(total_incidents),
         total_groups=int(total_groups),
+        total_events=int(events_received),
+        actionable_incidents=int(active_incidents),
+        suppressed_events=int(suppressed),
     )
+
+
+@router.get("/cooldown-matrix", response_model=list[CooldownState])
+def get_cooldown_matrix(
+    organization_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require_org_member(organization_id, user, db)
+
+    # Active suppression matrix: open incidents with last_notified_at set.
+    stmt = select(Incident).where(
+        Incident.organization_id == organization_id,
+        Incident.status == "OPEN",
+        Incident.last_notified_at.is_not(None)
+    )
+    incidents = db.scalars(stmt).all()
+
+    from app.config import settings
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+
+    cooldowns = []
+    for inc in incidents:
+        last_notified = inc.last_notified_at
+        if last_notified.tzinfo is None:
+            last_notified = last_notified.replace(tzinfo=timezone.utc)
+
+        cooldown_sec = settings.cooldown_for(inc.severity)
+        elapsed = (now - last_notified).total_seconds()
+        remaining = max(0, int(cooldown_sec - elapsed))
+        expiry = datetime.fromtimestamp(last_notified.timestamp() + cooldown_sec, tz=timezone.utc)
+
+        status_str = "ACTIVE_SUPPRESSION" if remaining > 0 else "COOLDOWN_EXPIRED"
+
+        app_name = inc.affected_applications[0] if (inc.affected_applications and len(inc.affected_applications) > 0) else "Unknown"
+
+        cooldowns.append(
+            CooldownState(
+                incident_id=inc.id,
+                service=inc.service or "global",
+                application_name=app_name,
+                title=inc.title,
+                trigger_time=last_notified,
+                expiry_time=expiry,
+                remaining_seconds=remaining,
+                severity=inc.severity,
+                suppressed_count=inc.events_suppressed,
+                status=status_str,
+            )
+        )
+
+    return cooldowns
 
 
 # ----------------------------------------------------------- realtime (SSE)
