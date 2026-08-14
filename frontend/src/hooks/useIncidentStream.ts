@@ -24,11 +24,12 @@ export function useIncidentStream(
     const orgId = organizationId;
     if (!orgId) return;
 
+    const controller = new AbortController();
     let es: EventSource | null = null;
     let isMounted = true;
 
     function connect() {
-      if (!isMounted || !orgId) return;
+      if (!isMounted || !orgId || controller.signal.aborted) return;
       es = new EventSource(streamUrl(orgId));
 
       es.onopen = () => {
@@ -38,7 +39,7 @@ export function useIncidentStream(
       };
 
       es.onmessage = (event) => {
-        if (isMounted) {
+        if (isMounted && !controller.signal.aborted) {
           try {
             const parsed = JSON.parse(event.data);
             if (options?.onEvent && parsed) {
@@ -62,6 +63,7 @@ export function useIncidentStream(
 
     return () => {
       isMounted = false;
+      controller.abort();
       if (es) {
         es.close();
       }

@@ -33,6 +33,7 @@ from app.schemas.incident import (
     NotificationEntry,
     TimelineEntry,
     CooldownState,
+    DashboardFeedResponse,
 )
 from app.schemas.telemetry import TelemetryEventResponse
 
@@ -414,3 +415,147 @@ async def incident_stream(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+def _fetch_all_dashboard_data(organization_id: str, db: Session):
+    # 1. Fetch KPIs
+    events_received = db.scalar(
+        select(func.count()).select_from(TelemetryEvent).where(
+            TelemetryEvent.organization_id == organization_id
+        )
+    ) or 0
+    total_groups = db.scalar(
+        select(func.count()).select_from(ErrorGroup).where(
+            ErrorGroup.organization_id == organization_id
+        )
+    ) or 0
+    grouped = db.scalar(
+        select(func.coalesce(func.sum(ErrorGroup.event_count), 0)).where(
+            ErrorGroup.organization_id == organization_id
+        )
+    ) or 0
+    suppressed = db.scalar(
+        select(func.coalesce(func.sum(Incident.events_suppressed), 0)).where(
+            Incident.organization_id == organization_id
+        )
+    ) or 0
+    notifications_sent = db.scalar(
+        select(func.coalesce(func.sum(Incident.notifications_sent), 0)).where(
+            Incident.organization_id == organization_id
+        )
+    ) or 0
+    total_incidents = db.scalar(
+        select(func.count()).select_from(Incident).where(
+            Incident.organization_id == organization_id
+        )
+    ) or 0
+    active_incidents = db.scalar(
+        select(func.count()).select_from(Incident).where(
+            Incident.organization_id == organization_id,
+            Incident.status.in_(["OPEN", "ACKNOWLEDGED"]),
+        )
+    ) or 0
+
+    naive = db.scalar(
+        select(func.coalesce(func.sum(Incident.event_count), 0)).where(
+            Incident.organization_id == organization_id
+        )
+    ) or 0
+    ratio = round(max(0.0, 1.0 - (notifications_sent / naive)) * 100.0, 2) if naive else 0.0
+
+    kpis = NoiseReductionKPIs(
+        events_received=int(events_received),
+        events_grouped=int(grouped),
+        events_suppressed=int(suppressed),
+        notifications_sent=int(notifications_sent),
+        naive_notifications=int(naive),
+        noise_reduction_ratio=ratio,
+        active_incidents=int(active_incidents),
+        total_incidents=int(total_incidents),
+        total_groups=int(total_groups),
+        total_events=int(events_received),
+        actionable_incidents=int(active_incidents),
+        suppressed_events=int(suppressed),
+    )
+
+    # 2. Fetch Cooldown Matrix
+    stmt = select(Incident).where(
+        Incident.organization_id == organization_id,
+        Incident.status == "OPEN",
+        Incident.last_notified_at.is_not(None)
+    )
+    cooldown_incidents = db.scalars(stmt).all()
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+
+    cooldowns = []
+    for inc in cooldown_incidents:
+        last_notified = inc.last_notified_at
+        if last_notified.tzinfo is None:
+            last_notified = last_notified.replace(tzinfo=timezone.utc)
+
+        cooldown_sec = settings.cooldown_for(inc.severity)
+        elapsed = (now - last_notified).total_seconds()
+        remaining = max(0, int(cooldown_sec - elapsed))
+        expiry = datetime.fromtimestamp(last_notified.timestamp() + cooldown_sec, tz=timezone.utc)
+
+        status_str = "ACTIVE_SUPPRESSION" if remaining > 0 else "COOLDOWN_EXPIRED"
+
+        app_name = inc.affected_applications[0] if (inc.affected_applications and len(inc.affected_applications) > 0) else "Unknown"
+
+        cooldowns.append(
+            CooldownState(
+                incident_id=inc.id,
+                service=inc.service or "global",
+                application_name=app_name,
+                title=inc.title,
+                trigger_time=last_notified,
+                expiry_time=expiry,
+                remaining_seconds=remaining,
+                severity=inc.severity,
+                suppressed_count=inc.events_suppressed,
+                status=status_str,
+            )
+        )
+
+    # 3. Fetch Incidents (limit = 8)
+    stmt_inc = (
+        select(Incident)
+        .where(Incident.organization_id == organization_id, Incident.status == "OPEN")
+        .order_by(Incident.last_seen.desc())
+        .limit(8)
+    )
+    incidents = db.scalars(stmt_inc).all()
+    incidents_serialized = [IncidentSummary.model_validate(i) for i in incidents]
+
+    # 4. Fetch Applications
+    from app.models.application import Application
+    from app.schemas.application import ApplicationResponse
+    apps = db.scalars(
+        select(Application)
+        .where(Application.organization_id == organization_id)
+        .order_by(Application.created_at.desc())
+    ).all()
+    applications = [ApplicationResponse.model_validate(a) for a in apps]
+
+    return {
+        "kpis": kpis,
+        "cooldown_matrix": cooldowns,
+        "incidents": incidents_serialized,
+        "applications": applications
+    }
+
+
+@router.get("/dashboard-feed", response_model=DashboardFeedResponse)
+async def get_dashboard_feed(
+    organization_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Fetches KPIs, active incidents, cooldown matrix, and apps in a SINGLE query pass."""
+    def _query():
+        require_org_member(organization_id, user, db)
+        return _fetch_all_dashboard_data(organization_id, db)
+
+    return await run_in_threadpool(_query)

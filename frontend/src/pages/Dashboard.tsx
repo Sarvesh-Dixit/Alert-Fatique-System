@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
   const [cooldowns, setCooldowns] = useState<CooldownState[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 
   // Loading States & Toasts
@@ -46,24 +47,21 @@ export default function Dashboard() {
       return fetchPromiseRef.current;
     }
 
-    const promise = Promise.all([
-      api.get<NoiseReductionKPIs>(`/organizations/${currentOrg.id}/kpis`),
-      api.get<CooldownState[]>(`/organizations/${currentOrg.id}/cooldown-matrix`),
-      api.get<Incident[]>(`/organizations/${currentOrg.id}/incidents?status=OPEN&limit=8`),
-    ]);
+    const promise = api.get<any>(`/organizations/${currentOrg.id}/dashboard-feed`);
 
     fetchPromiseRef.current = promise;
 
     try {
-      const [k, cds, inc] = await promise;
-      setKpis(k);
-      setCooldowns(cds);
-      setIncidents(inc);
+      const data = await promise;
+      setKpis(data.kpis);
+      setCooldowns(data.cooldown_matrix);
+      setIncidents(data.incidents);
+      setApplications(data.applications);
       setLoadingKPIs(false);
       setLoadingCooldown(false);
       setLoadingIncidents(false);
     } catch (err) {
-      console.error("Dashboard fetch failed", err);
+      console.error("Dashboard feed fetch failed", err);
     } finally {
       fetchPromiseRef.current = null;
     }
