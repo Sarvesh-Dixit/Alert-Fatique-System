@@ -52,13 +52,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — the Vite dashboard talks to this API from the browser.
+# Clean origins: strip whitespace and trailing slashes
+origins = [
+    origin.strip().rstrip("/")
+    for origin in [
+        "https://alert-fatique-system.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ]
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if not settings.is_production else [],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Matches all Vercel domains and preview URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 API_V1 = "/api/v1"
