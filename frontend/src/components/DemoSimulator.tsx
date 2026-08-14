@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { api } from "../api/client";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTelemetryInjection } from "../context/TelemetryToastContext";
 import { Zap, Database, Layers, Terminal } from "lucide-react";
 
 interface DemoSimulatorProps {
@@ -10,87 +10,65 @@ interface DemoSimulatorProps {
 
 export default function DemoSimulator({ onScenarioTriggered, onSimulationStateChange }: DemoSimulatorProps) {
   const { currentOrg } = useAuth();
+  const { toast, isInjecting, triggerTelemetryInjection } = useTelemetryInjection();
   const [busy, setBusy] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
 
-  const runScenario = async (scenario: string, count: number) => {
-    if (!currentOrg) return;
-    setBusy(scenario);
-    if (onSimulationStateChange) {
-      onSimulationStateChange(true);
+  useEffect(() => {
+    if (!toast) {
+      if (!isInjecting) {
+        setBusy("");
+      }
+      return;
     }
-    setLogs([
-      `[${new Date().toLocaleTimeString()}] [INIT] Initiating telemetry injection: ${scenario}...`
-    ]);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 30000); // 30 seconds timeout
-
-    try {
-      const res = await api.post<any>(
-        `/organizations/${currentOrg.id}/demo/simulate?sync=false&pattern=${scenario}&count=${count}`,
-        { pattern: scenario, sync: false },
-        { signal: controller.signal }
-      );
-      clearTimeout(timeoutId);
-      
-      setLogs((prev) => [
-        ...prev,
-        `[${new Date().toLocaleTimeString()}] [SUCCESS] Ingestion pipeline started. Streaming telemetry events to highway...`
-      ]);
-
-      // Animate counting up from 0 to count
-      let currentCount = 0;
-      const step = Math.ceil(count / 20); // 20 steps
-      const intervalId = setInterval(() => {
-        currentCount += step;
-        if (currentCount >= count) {
-          currentCount = count;
-          clearInterval(intervalId);
-          setLogs((prev) => [
-            ...prev.filter(l => !l.includes("[INGEST]")),
-            `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streamed ${count}/${count} raw events`,
-            `[${new Date().toLocaleTimeString()}] [EMBED] Vector Embedding Engine: Computed ${count} trace embeddings`,
-            `[${new Date().toLocaleTimeString()}] [GROUP] Incident Threading: Correlating traces and suppression...`,
-            `[${new Date().toLocaleTimeString()}] [DONE] Simulation completed. Streamed to Real-Time SSE channel.`
-          ]);
-          if (onScenarioTriggered) {
-            onScenarioTriggered();
-          }
-          if (onSimulationStateChange) {
-            onSimulationStateChange(false);
-          }
-          setBusy("");
-        } else {
-          setLogs((prev) => {
-            const base = prev.filter(l => !l.includes("[INGEST]"));
-            return [
-              ...base,
-              `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streaming raw events (${currentCount}/${count})...`
-            ];
-          });
+    if (toast.type === "loading") {
+      if (toast.message.startsWith("Injecting Telemetry")) {
+        const scenarioName = toast.message.replace("Injecting Telemetry: ", "").toLowerCase();
+        setBusy(scenarioName);
+        setLogs([
+          `[${new Date().toLocaleTimeString()}] [INIT] Initiating telemetry injection: ${scenarioName}...`
+        ]);
+        if (onSimulationStateChange) {
+          onSimulationStateChange(true);
         }
-      }, 100);
-
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      console.error("Failed to run scenario:", err);
-      const isTimeout = err.name === "AbortError" || controller.signal.aborted;
-      const errorMsg = isTimeout
-        ? "Ingestion request timed out (gateway/API took more than 30s to respond)"
-        : err instanceof Error ? err.message : String(err);
-      
+      } else if (toast.message === "Telemetry Highway Ingestion Active") {
+        setLogs((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] [SUCCESS] Ingestion pipeline started. Streaming telemetry events to highway...`,
+          `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streaming raw events (30/30)...`
+        ]);
+      }
+    } else if (toast.type === "success") {
+      setLogs((prev) => [
+        ...prev.filter(l => !l.includes("[INGEST]")),
+        `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streamed 30/30 raw events`,
+        `[${new Date().toLocaleTimeString()}] [EMBED] Vector Embedding Engine: Computed 30 trace embeddings`,
+        `[${new Date().toLocaleTimeString()}] [GROUP] Incident Threading: Correlating traces and suppression...`,
+        `[${new Date().toLocaleTimeString()}] [DONE] Simulation completed. Streamed to Real-Time SSE channel.`
+      ]);
+      setBusy("");
+      if (onSimulationStateChange) {
+        onSimulationStateChange(false);
+      }
+      if (onScenarioTriggered) {
+        onScenarioTriggered();
+      }
+    } else if (toast.type === "error") {
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${errorMsg}`
+        `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${toast.sub}`
       ]);
       setBusy("");
       if (onSimulationStateChange) {
         onSimulationStateChange(false);
       }
     }
+  }, [toast, isInjecting]);
+
+  const runScenario = async (scenario: string, count: number) => {
+    if (!currentOrg) return;
+    await triggerTelemetryInjection(currentOrg.id, scenario, count);
   };
 
   return (
@@ -108,8 +86,12 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
       <div className="flex flex-wrap gap-3">
         {/* Error Burst */}
         <button
-          className="btn border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/60 text-amber-300 px-4 py-2.5 text-xs font-bold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(245,158,11,0.05)] disabled:opacity-50"
-          disabled={!!busy}
+          className={`btn border px-4 py-2.5 text-xs font-bold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+            busy === "error-burst"
+              ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+              : "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.05)]"
+          }`}
+          disabled={isInjecting}
           onClick={() => runScenario("error-burst", 30)}
         >
           <Zap className="w-4 h-4 mr-2 text-amber-400" />
@@ -118,8 +100,12 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
 
         {/* LogHub HDFS Outage */}
         <button
-          className="btn border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 text-cyan-300 px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(0,240,255,0.05)] disabled:opacity-50"
-          disabled={!!busy}
+          className={`btn border px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+            busy === "loghub-hdfs-outage"
+              ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+              : "border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.05)]"
+          }`}
+          disabled={isInjecting}
           onClick={() => runScenario("loghub-hdfs-outage", 30)}
         >
           <Database className="w-4 h-4 mr-2 text-cyan-400" />
@@ -128,8 +114,12 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
 
         {/* Database Outage */}
         <button
-          className="btn border border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/60 text-rose-300 px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(244,63,94,0.05)] disabled:opacity-50"
-          disabled={!!busy}
+          className={`btn border px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+            busy === "database-outage"
+              ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+              : "border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.05)]"
+          }`}
+          disabled={isInjecting}
           onClick={() => runScenario("database-outage", 30)}
         >
           <Layers className="w-4 h-4 mr-2 text-rose-400" />

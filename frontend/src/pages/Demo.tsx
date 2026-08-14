@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type DemoScenario } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useTelemetryInjection } from "../context/TelemetryToastContext";
 import { SeverityBadge } from "../ui";
 import { 
   Play, 
@@ -42,78 +43,36 @@ interface SimResult {
   events_suppressed: number;
 }
 
-interface ToastState {
-  message: string;
-  sub: string;
-  type: "success" | "info" | "error";
-}
-
 export default function Demo() {
   const { currentOrg } = useAuth();
   const [scenarios, setScenarios] = useState<DemoScenario[]>([]);
   const [count, setCount] = useState(30);
   const [busy, setBusy] = useState("");
   const [result, setResult] = useState<SimResult | null>(null);
-  const [toast, setToast] = useState<ToastState | null>(null);
+  const { triggerTelemetryInjection } = useTelemetryInjection();
 
   useEffect(() => {
     if (!currentOrg) return;
     api.get<DemoScenario[]>(`/organizations/${currentOrg.id}/demo/scenarios`).then(setScenarios);
   }, [currentOrg?.id]);
 
-  const triggerToast = (message: string, sub: string, type: "success" | "info" | "error") => {
-    setToast({ message, sub, type });
-    // Dismiss automatically after 8 seconds
-    const timer = setTimeout(() => {
-      setToast(null);
-    }, 8000);
-    return timer;
-  };
-
   async function run(scenario: string) {
     if (!currentOrg) return;
     setBusy(scenario);
     setResult(null);
-    triggerToast(
-      "Simulating Telemetry...",
-      `Injecting ${count} events into organization pipeline. Please wait.`,
-      "info"
-    );
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 30000); // 30 seconds timeout
-
-    try {
-      const res = await api.post<SimResult>(
-        `/organizations/${currentOrg.id}/demo/simulate?sync=false&pattern=${scenario}&count=${count}`,
-        { pattern: scenario, sync: false },
-        { signal: controller.signal }
-      );
-      clearTimeout(timeoutId);
-      setResult(res);
-      triggerToast(
-        "Simulation Started!",
-        `Ingestion pipeline started in the background. Streaming telemetry events to highway...`,
-        "success"
-      );
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      console.error(err);
-      const isTimeout = err.name === "AbortError" || controller.signal.aborted;
-      const errorMsg = isTimeout
-        ? "Ingestion request timed out (gateway/API took more than 30s to respond)."
-        : err.message || "An unexpected error occurred during ingestion.";
-
-      triggerToast(
-        "Simulation Failed",
-        errorMsg,
-        "error"
-      );
-    } finally {
-      setBusy("");
-    }
+    await triggerTelemetryInjection(currentOrg.id, scenario, count, async () => {
+      try {
+        const res = await api.post<SimResult>(
+          `/organizations/${currentOrg.id}/demo/simulate?sync=true&pattern=${scenario}&count=${count}`,
+          { pattern: scenario, sync: true }
+        );
+        setResult(res);
+      } catch (err) {
+        console.error("Failed to load diagnostic report", err);
+      }
+    });
+    setBusy("");
   }
 
   const getScenarioIcon = (id: string) => {
@@ -126,34 +85,6 @@ export default function Demo() {
 
   return (
     <div className="font-sans max-w-5xl relative">
-      
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-[#181926]/95 backdrop-blur-xl border border-[#252940] rounded-xl shadow-2xl p-4 flex gap-3 text-white animate-in slide-in-from-bottom duration-300">
-          <div className="shrink-0 mt-0.5">
-            {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-            {toast.type === "info" && <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />}
-            {toast.type === "error" && <ShieldAlert className="w-5 h-5 text-rose-500" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-bold uppercase tracking-wider">{toast.message}</h4>
-            <p className="text-[11px] text-white/70 leading-relaxed mt-1">{toast.sub}</p>
-            {toast.type === "success" && (
-              <div className="flex gap-3 mt-2 pt-2 border-t border-[#252940] text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
-                <Link to="/dashboard" onClick={() => setToast(null)} className="hover:text-cyan-300 hover:underline">1. Overview</Link>
-                <Link to="/incidents" onClick={() => setToast(null)} className="hover:text-cyan-300 hover:underline">2. Events</Link>
-                <Link to="/explorer" onClick={() => setToast(null)} className="hover:text-cyan-300 hover:underline">3. Live Tail</Link>
-              </div>
-            )}
-          </div>
-          <button 
-            onClick={() => setToast(null)} 
-            className="text-white/40 hover:text-white transition shrink-0 self-start"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Header Banner */}
       <div className="mb-8">
