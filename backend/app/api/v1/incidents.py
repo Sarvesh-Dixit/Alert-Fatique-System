@@ -23,6 +23,7 @@ from app.models.incident import (
 )
 from app.models.telemetry import TelemetryEvent
 from app.models.user import User
+from fastapi.concurrency import run_in_threadpool
 from app.schemas.incident import (
     ErrorGroupSummary,
     IncidentDetail,
@@ -42,7 +43,7 @@ _VALID_STATUSES = {"OPEN", "ACKNOWLEDGED", "RESOLVED", "CLOSED"}
 
 # ---------------------------------------------------------------- incidents
 @router.get("/incidents", response_model=list[IncidentSummary])
-def list_incidents(
+async def list_incidents(
     organization_id: str,
     status_filter: str | None = Query(default=None, alias="status"),
     severity: str | None = None,
@@ -52,16 +53,19 @@ def list_incidents(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    require_org_member(organization_id, user, db)
-    stmt = select(Incident).where(Incident.organization_id == organization_id)
-    if status_filter:
-        stmt = stmt.where(Incident.status == status_filter.upper())
-    if severity:
-        stmt = stmt.where(Incident.severity == severity.upper())
-    if application_id:
-        stmt = stmt.where(Incident.application_id == application_id)
-    stmt = stmt.order_by(Incident.last_seen.desc()).limit(limit).offset(offset)
-    return db.scalars(stmt).all()
+    def _query():
+        require_org_member(organization_id, user, db)
+        stmt = select(Incident).where(Incident.organization_id == organization_id)
+        if status_filter:
+            stmt = stmt.where(Incident.status == status_filter.upper())
+        if severity:
+            stmt = stmt.where(Incident.severity == severity.upper())
+        if application_id:
+            stmt = stmt.where(Incident.application_id == application_id)
+        stmt = stmt.order_by(Incident.last_seen.desc()).limit(limit).offset(offset)
+        return db.scalars(stmt).all()
+
+    return await run_in_threadpool(_query)
 
 
 @router.get("/incidents/{incident_id}", response_model=IncidentDetail)
@@ -212,125 +216,131 @@ def error_group_events(
 
 # --------------------------------------------------------------------- KPIs
 @router.get("/kpis", response_model=NoiseReductionKPIs)
-def noise_reduction_kpis(
+async def noise_reduction_kpis(
     organization_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    require_org_member(organization_id, user, db)
+    def _query():
+        require_org_member(organization_id, user, db)
 
-    events_received = db.scalar(
-        select(func.count()).select_from(TelemetryEvent).where(
-            TelemetryEvent.organization_id == organization_id
-        )
-    ) or 0
-    total_groups = db.scalar(
-        select(func.count()).select_from(ErrorGroup).where(
-            ErrorGroup.organization_id == organization_id
-        )
-    ) or 0
-    grouped = db.scalar(
-        select(func.coalesce(func.sum(ErrorGroup.event_count), 0)).where(
-            ErrorGroup.organization_id == organization_id
-        )
-    ) or 0
-    suppressed = db.scalar(
-        select(func.coalesce(func.sum(Incident.events_suppressed), 0)).where(
-            Incident.organization_id == organization_id
-        )
-    ) or 0
-    notifications_sent = db.scalar(
-        select(func.coalesce(func.sum(Incident.notifications_sent), 0)).where(
-            Incident.organization_id == organization_id
-        )
-    ) or 0
-    total_incidents = db.scalar(
-        select(func.count()).select_from(Incident).where(
-            Incident.organization_id == organization_id
-        )
-    ) or 0
-    active_incidents = db.scalar(
-        select(func.count()).select_from(Incident).where(
-            Incident.organization_id == organization_id,
-            Incident.status.in_(["OPEN", "ACKNOWLEDGED"]),
-        )
-    ) or 0
+        events_received = db.scalar(
+            select(func.count()).select_from(TelemetryEvent).where(
+                TelemetryEvent.organization_id == organization_id
+            )
+        ) or 0
+        total_groups = db.scalar(
+            select(func.count()).select_from(ErrorGroup).where(
+                ErrorGroup.organization_id == organization_id
+            )
+        ) or 0
+        grouped = db.scalar(
+            select(func.coalesce(func.sum(ErrorGroup.event_count), 0)).where(
+                ErrorGroup.organization_id == organization_id
+            )
+        ) or 0
+        suppressed = db.scalar(
+            select(func.coalesce(func.sum(Incident.events_suppressed), 0)).where(
+                Incident.organization_id == organization_id
+            )
+        ) or 0
+        notifications_sent = db.scalar(
+            select(func.coalesce(func.sum(Incident.notifications_sent), 0)).where(
+                Incident.organization_id == organization_id
+            )
+        ) or 0
+        total_incidents = db.scalar(
+            select(func.count()).select_from(Incident).where(
+                Incident.organization_id == organization_id
+            )
+        ) or 0
+        active_incidents = db.scalar(
+            select(func.count()).select_from(Incident).where(
+                Incident.organization_id == organization_id,
+                Incident.status.in_(["OPEN", "ACKNOWLEDGED"]),
+            )
+        ) or 0
 
-    # Naive systems notify once per event routed to an incident.
-    naive = db.scalar(
-        select(func.coalesce(func.sum(Incident.event_count), 0)).where(
-            Incident.organization_id == organization_id
-        )
-    ) or 0
-    ratio = round(max(0.0, 1.0 - (notifications_sent / naive)) * 100.0, 2) if naive else 0.0
+        # Naive systems notify once per event routed to an incident.
+        naive = db.scalar(
+            select(func.coalesce(func.sum(Incident.event_count), 0)).where(
+                Incident.organization_id == organization_id
+            )
+        ) or 0
+        ratio = round(max(0.0, 1.0 - (notifications_sent / naive)) * 100.0, 2) if naive else 0.0
 
-    return NoiseReductionKPIs(
-        events_received=int(events_received),
-        events_grouped=int(grouped),
-        events_suppressed=int(suppressed),
-        notifications_sent=int(notifications_sent),
-        naive_notifications=int(naive),
-        noise_reduction_ratio=ratio,
-        active_incidents=int(active_incidents),
-        total_incidents=int(total_incidents),
-        total_groups=int(total_groups),
-        total_events=int(events_received),
-        actionable_incidents=int(active_incidents),
-        suppressed_events=int(suppressed),
-    )
+        return NoiseReductionKPIs(
+            events_received=int(events_received),
+            events_grouped=int(grouped),
+            events_suppressed=int(suppressed),
+            notifications_sent=int(notifications_sent),
+            naive_notifications=int(naive),
+            noise_reduction_ratio=ratio,
+            active_incidents=int(active_incidents),
+            total_incidents=int(total_incidents),
+            total_groups=int(total_groups),
+            total_events=int(events_received),
+            actionable_incidents=int(active_incidents),
+            suppressed_events=int(suppressed),
+        )
+
+    return await run_in_threadpool(_query)
 
 
 @router.get("/cooldown-matrix", response_model=list[CooldownState])
-def get_cooldown_matrix(
+async def get_cooldown_matrix(
     organization_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    require_org_member(organization_id, user, db)
+    def _query():
+        require_org_member(organization_id, user, db)
 
-    # Active suppression matrix: open incidents with last_notified_at set.
-    stmt = select(Incident).where(
-        Incident.organization_id == organization_id,
-        Incident.status == "OPEN",
-        Incident.last_notified_at.is_not(None)
-    )
-    incidents = db.scalars(stmt).all()
-
-    from app.config import settings
-    from datetime import datetime, timezone
-    now = datetime.now(timezone.utc)
-
-    cooldowns = []
-    for inc in incidents:
-        last_notified = inc.last_notified_at
-        if last_notified.tzinfo is None:
-            last_notified = last_notified.replace(tzinfo=timezone.utc)
-
-        cooldown_sec = settings.cooldown_for(inc.severity)
-        elapsed = (now - last_notified).total_seconds()
-        remaining = max(0, int(cooldown_sec - elapsed))
-        expiry = datetime.fromtimestamp(last_notified.timestamp() + cooldown_sec, tz=timezone.utc)
-
-        status_str = "ACTIVE_SUPPRESSION" if remaining > 0 else "COOLDOWN_EXPIRED"
-
-        app_name = inc.affected_applications[0] if (inc.affected_applications and len(inc.affected_applications) > 0) else "Unknown"
-
-        cooldowns.append(
-            CooldownState(
-                incident_id=inc.id,
-                service=inc.service or "global",
-                application_name=app_name,
-                title=inc.title,
-                trigger_time=last_notified,
-                expiry_time=expiry,
-                remaining_seconds=remaining,
-                severity=inc.severity,
-                suppressed_count=inc.events_suppressed,
-                status=status_str,
-            )
+        # Active suppression matrix: open incidents with last_notified_at set.
+        stmt = select(Incident).where(
+            Incident.organization_id == organization_id,
+            Incident.status == "OPEN",
+            Incident.last_notified_at.is_not(None)
         )
+        incidents = db.scalars(stmt).all()
 
-    return cooldowns
+        from app.config import settings
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+
+        cooldowns = []
+        for inc in incidents:
+            last_notified = inc.last_notified_at
+            if last_notified.tzinfo is None:
+                last_notified = last_notified.replace(tzinfo=timezone.utc)
+
+            cooldown_sec = settings.cooldown_for(inc.severity)
+            elapsed = (now - last_notified).total_seconds()
+            remaining = max(0, int(cooldown_sec - elapsed))
+            expiry = datetime.fromtimestamp(last_notified.timestamp() + cooldown_sec, tz=timezone.utc)
+
+            status_str = "ACTIVE_SUPPRESSION" if remaining > 0 else "COOLDOWN_EXPIRED"
+
+            app_name = inc.affected_applications[0] if (inc.affected_applications and len(inc.affected_applications) > 0) else "Unknown"
+
+            cooldowns.append(
+                CooldownState(
+                    incident_id=inc.id,
+                    service=inc.service or "global",
+                    application_name=app_name,
+                    title=inc.title,
+                    trigger_time=last_notified,
+                    expiry_time=expiry,
+                    remaining_seconds=remaining,
+                    severity=inc.severity,
+                    suppressed_count=inc.events_suppressed,
+                    status=status_str,
+                )
+            )
+
+        return cooldowns
+
+    return await run_in_threadpool(_query)
 
 
 # ----------------------------------------------------------- realtime (SSE)
@@ -398,5 +408,9 @@ async def incident_stream(
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )

@@ -5,9 +5,10 @@ import { Zap, Database, Layers, Terminal } from "lucide-react";
 
 interface DemoSimulatorProps {
   onScenarioTriggered?: () => void;
+  onSimulationStateChange?: (running: boolean) => void;
 }
 
-export default function DemoSimulator({ onScenarioTriggered }: DemoSimulatorProps) {
+export default function DemoSimulator({ onScenarioTriggered, onSimulationStateChange }: DemoSimulatorProps) {
   const { currentOrg } = useAuth();
   const [busy, setBusy] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
@@ -15,11 +16,25 @@ export default function DemoSimulator({ onScenarioTriggered }: DemoSimulatorProp
   const runScenario = async (scenario: string, count: number) => {
     if (!currentOrg) return;
     setBusy(scenario);
+    if (onSimulationStateChange) {
+      onSimulationStateChange(true);
+    }
     setLogs([
       `[${new Date().toLocaleTimeString()}] [INIT] Initiating telemetry injection: ${scenario}...`
     ]);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000); // 15 seconds timeout
+
     try {
-      const res = await api.post<any>(`/organizations/${currentOrg.id}/demo/simulate/${scenario}?count=${count}&apps=3`);
+      const res = await api.post<any>(
+        `/organizations/${currentOrg.id}/demo/simulate/${scenario}?count=${count}&apps=3&sync=false`,
+        null,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
       setLogs((prev) => [
         ...prev,
         `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Generated ${count} raw events`,
@@ -31,14 +46,23 @@ export default function DemoSimulator({ onScenarioTriggered }: DemoSimulatorProp
       if (onScenarioTriggered) {
         onScenarioTriggered();
       }
-    } catch (err) {
+    } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("Failed to run scenario:", err);
+      const isTimeout = err.name === "AbortError" || controller.signal.aborted;
+      const errorMsg = isTimeout
+        ? "Ingestion request timed out (gateway/API took more than 15s to respond)"
+        : err instanceof Error ? err.message : String(err);
+      
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${err instanceof Error ? err.message : String(err)}`
+        `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${errorMsg}`
       ]);
     } finally {
       setBusy("");
+      if (onSimulationStateChange) {
+        onSimulationStateChange(false);
+      }
     }
   };
 

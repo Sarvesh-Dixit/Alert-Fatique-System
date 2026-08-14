@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
   const [cooldowns, setCooldowns] = useState<CooldownState[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 
   // Category Collapsibility State
   const [cat1Open, setCat1Open] = useState(true);
@@ -47,7 +48,7 @@ export default function Dashboard() {
   }, [load]);
 
   // Connect to real-time SSE updates
-  useIncidentStream(currentOrg?.id, load);
+  useIncidentStream(currentOrg?.id, load, { isSimulationRunning });
 
   const formatMetric = (num: number) => {
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
@@ -85,7 +86,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6 font-sans">
       {/* Telemetry Simulator Quick-Controls Banner */}
-      <DemoSimulator onScenarioTriggered={load} />
+      <DemoSimulator onScenarioTriggered={load} onSimulationStateChange={setIsSimulationRunning} />
 
       {/* Category 1: Executive Overview & Noise Reduction */}
       <div className="flex flex-col gap-3">

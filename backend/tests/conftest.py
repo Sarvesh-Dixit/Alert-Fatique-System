@@ -12,6 +12,10 @@ os.environ.setdefault("JWT_SECRET", "test-secret-key")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("RATE_LIMIT_PER_MINUTE", "600")
 os.environ.setdefault("MAX_PAYLOAD_BYTES", "4096")
+os.environ.setdefault(
+    "CORS_ORIGINS",
+    "https://alert-fatique-system.vercel.app,http://localhost:5173,http://localhost:3000"
+)
 
 import fakeredis  # noqa: E402
 import pytest  # noqa: E402

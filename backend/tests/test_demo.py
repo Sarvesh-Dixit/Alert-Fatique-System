@@ -12,7 +12,7 @@ def test_loghub_hdfs_outage_compression(client):
 
     # Simulate loghub-hdfs-outage outage scenario with count=1000
     resp = client.post(
-        f"/api/v1/organizations/{org_id}/demo/simulate/loghub-hdfs-outage?count=1000&apps=3&noise_factor=1",
+        f"/api/v1/organizations/{org_id}/demo/simulate/loghub-hdfs-outage?count=1000&apps=3&noise_factor=1&sync=true",
         headers=h,
     )
     assert resp.status_code == 200, resp.text
