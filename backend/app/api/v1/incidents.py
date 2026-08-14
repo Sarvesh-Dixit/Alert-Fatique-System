@@ -11,6 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_org_member
+from app.config import settings
 from app.core import realtime
 from app.core.security import decode_access_token
 from app.database import get_db
