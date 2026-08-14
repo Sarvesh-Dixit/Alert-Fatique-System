@@ -13,7 +13,9 @@ from __future__ import annotations
 import random
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
+import asyncio
+from app.core.redis_client import publish_event
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -176,12 +178,14 @@ def list_scenarios(
 
 
 @router.post("/simulate/{scenario}")
-def simulate(
+async def simulate(
     organization_id: str,
     scenario: str,
+    background_tasks: BackgroundTasks,
     count: int = Query(default=2000, ge=1, le=20000),
     apps: int = Query(default=3, ge=1, le=10),
     noise_factor: int = Query(default=1, ge=1, le=10),
+    sync: bool = Query(default=True),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -190,50 +194,139 @@ def simulate(
     if scenario not in SCENARIOS:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown scenario '{scenario}'")
 
-    if scenario == "loghub-hdfs-outage":
-        from app.demo.simulator import run_loghub_simulation
-        return run_loghub_simulation(db, organization_id, count, noise_factor, apps)
+    if sync:
+        if scenario == "loghub-hdfs-outage":
+            from app.demo.simulator import run_loghub_simulation
+            from fastapi.concurrency import run_in_threadpool
+            return await run_in_threadpool(run_loghub_simulation, db, organization_id, count, noise_factor, apps)
 
-    demo_apps = _ensure_demo_apps(db, organization_id, apps)
-    events = _generate(scenario, demo_apps, count)
+        demo_apps = _ensure_demo_apps(db, organization_id, apps)
+        events = _generate(scenario, demo_apps, count)
 
-    for ev in events:
-        process_event(db, ev, commit=False)  # intelligence side-effects applied inline
-    db.commit()
+        for ev in events:
+            process_event(db, ev, commit=False)  # intelligence side-effects applied inline
+        db.commit()
 
-    # Summarize the incidents touched by this simulation window.
-    incidents = db.scalars(
-        select(Incident)
-        .where(Incident.organization_id == organization_id)
-        .order_by(Incident.last_seen.desc())
-        .limit(10)
-    ).all()
+        # Summarize the incidents touched by this simulation window.
+        incidents = db.scalars(
+            select(Incident)
+            .where(Incident.organization_id == organization_id)
+            .order_by(Incident.last_seen.desc())
+            .limit(10)
+        ).all()
 
-    total_notifs = sum(i.notifications_sent for i in incidents)
-    total_suppressed = sum(i.events_suppressed for i in incidents)
+        total_notifs = sum(i.notifications_sent for i in incidents)
+        total_suppressed = sum(i.events_suppressed for i in incidents)
 
-    return {
-        "scenario": scenario,
-        "events_generated": len(events),
-        "applications": len(demo_apps),
-        "incidents": [
-            {
-                "id": i.id,
-                "title": i.title,
-                "severity": i.severity,
-                "status": i.status,
-                "event_count": i.event_count,
-                "affected_instances": len(i.affected_instances),
-                "affected_services": len(i.affected_services),
-                "affected_applications": len(i.affected_applications),
-                "spike_multiplier": i.spike_multiplier,
-                "notifications_sent": i.notifications_sent,
-                "events_suppressed": i.events_suppressed,
-                "noise_reduction_ratio": i.noise_reduction_ratio,
-            }
-            for i in incidents
-            if i.last_seen and i.event_count > 0
-        ][:5],
-        "notifications_sent": total_notifs,
-        "events_suppressed": total_suppressed,
-    }
+        return {
+            "scenario": scenario,
+            "events_generated": len(events),
+            "applications": len(demo_apps),
+            "incidents": [
+                {
+                    "id": i.id,
+                    "title": i.title,
+                    "severity": i.severity,
+                    "status": i.status,
+                    "event_count": i.event_count,
+                    "affected_instances": len(i.affected_instances),
+                    "affected_services": len(i.affected_services),
+                    "affected_applications": len(i.affected_applications),
+                    "spike_multiplier": i.spike_multiplier,
+                    "notifications_sent": i.notifications_sent,
+                    "events_suppressed": i.events_suppressed,
+                    "noise_reduction_ratio": i.noise_reduction_ratio,
+                }
+                for i in incidents
+                if i.last_seen and i.event_count > 0
+            ][:5],
+            "notifications_sent": total_notifs,
+            "events_suppressed": total_suppressed,
+        }
+    else:
+        background_tasks.add_task(
+            run_async_simulation,
+            organization_id,
+            scenario,
+            count,
+            apps,
+            noise_factor
+        )
+        return {
+            "scenario": scenario,
+            "events_generated": count,
+            "applications": apps,
+            "incidents": [],
+            "notifications_sent": 0,
+            "events_suppressed": 0,
+        }
+
+
+async def run_async_simulation(
+    org_id: str,
+    scenario: str,
+    count: int,
+    apps_count: int,
+    noise_factor: int,
+):
+    from app.database import SessionLocal
+    from app.worker.processor import process_event
+    from app.core.redis_client import publish_event
+    from datetime import datetime, timezone
+    
+    db = SessionLocal()
+    try:
+        if scenario == "loghub-hdfs-outage":
+            from app.api.v1.demo import _ensure_demo_apps
+            from app.demo.simulator import DATASET_PATH
+            import json
+            
+            demo_apps = _ensure_demo_apps(db, org_id, apps_count)
+            db.commit()
+            
+            with open(DATASET_PATH) as f:
+                dataset = json.load(f)
+                
+            start_time = datetime.now(timezone.utc)
+            events_to_process = []
+            for idx in range(count):
+                base_log = dataset[idx % len(dataset)]
+                app = demo_apps[idx % len(demo_apps)]
+                for n in range(noise_factor):
+                    timestamp = start_time
+                    now_str = timestamp.isoformat()
+                    events_to_process.append({
+                        "event_id": new_id("evt"),
+                        "organization_id": org_id,
+                        "application_id": app.id,
+                        "service": base_log["service"],
+                        "source_type": "application",
+                        "environment": "production",
+                        "region": app.region or "india",
+                        "event_type": base_log.get("event_type", "log"),
+                        "severity": base_log["severity"],
+                        "message": base_log["message"],
+                        "timestamp": now_str,
+                        "received_at": now_str,
+                        "metadata": dict(base_log.get("metadata", {})),
+                    })
+            
+            for ev in events_to_process:
+                publish_event(ev)
+                process_event(db, ev, commit=True)
+                await asyncio.sleep(0.002)
+        else:
+            from app.api.v1.demo import _ensure_demo_apps, _generate
+            demo_apps = _ensure_demo_apps(db, org_id, apps_count)
+            db.commit()
+            events = _generate(scenario, demo_apps, count)
+            
+            for ev in events:
+                publish_event(ev)
+                process_event(db, ev, commit=True)
+                await asyncio.sleep(0.002)
+    except Exception as e:
+        import logging
+        logging.getLogger("telemetry.api").error(f"Background simulation failed: {e}")
+    finally:
+        db.close()

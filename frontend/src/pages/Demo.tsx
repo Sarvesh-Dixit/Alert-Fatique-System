@@ -79,10 +79,19 @@ export default function Demo() {
       `Injecting ${count} events into organization pipeline. Please wait.`,
       "info"
     );
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000); // 15 seconds timeout
+
     try {
       const res = await api.post<SimResult>(
-        `/organizations/${currentOrg.id}/demo/simulate/${scenario}?count=${count}&apps=3`,
+        `/organizations/${currentOrg.id}/demo/simulate/${scenario}?count=${count}&apps=3&sync=false`,
+        null,
+        { signal: controller.signal }
       );
+      clearTimeout(timeoutId);
       setResult(res);
       triggerToast(
         "Simulation Completed!",
@@ -90,10 +99,16 @@ export default function Demo() {
         "success"
       );
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error(err);
+      const isTimeout = err.name === "AbortError" || controller.signal.aborted;
+      const errorMsg = isTimeout
+        ? "Ingestion request timed out (gateway/API took more than 15s to respond)."
+        : err.message || "An unexpected error occurred during ingestion.";
+
       triggerToast(
         "Simulation Failed",
-        err.message || "An unexpected error occurred during ingestion.",
+        errorMsg,
         "error"
       );
     } finally {

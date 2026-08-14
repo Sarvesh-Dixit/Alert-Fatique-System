@@ -12,11 +12,26 @@ if db_url.startswith("postgres://"):
 elif db_url.startswith("postgresql://"):
     db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
-engine = create_engine(
-    db_url,
-    pool_pre_ping=True,
-    future=True,
-)
+# Enforce the session pooler port (5432) instead of transaction pooler (6543) if present
+if ":6543" in db_url:
+    db_url = db_url.replace(":6543", ":5432")
+
+# Database session pooling configuration
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "future": True,
+}
+
+# SQLite does not support pool_size or max_overflow arguments
+if not db_url.startswith("sqlite"):
+    engine_kwargs.update({
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 1800,
+    })
+
+engine = create_engine(db_url, **engine_kwargs)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
