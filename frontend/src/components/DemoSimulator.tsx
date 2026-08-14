@@ -13,6 +13,27 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
   const { toast, isInjecting, triggerTelemetryInjection } = useTelemetryInjection();
   const [busy, setBusy] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
+  const [processedCount, setProcessedCount] = useState(0);
+
+  // Simulated log processor ticks
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isInjecting) {
+      setProcessedCount(0);
+      interval = setInterval(() => {
+        setProcessedCount((prev) => {
+          if (prev >= 30) {
+            clearInterval(interval);
+            return 30;
+          }
+          return prev + 1;
+        });
+      }, 75); // ~2.2 seconds to reach 30
+    } else {
+      setProcessedCount(30);
+    }
+    return () => clearInterval(interval);
+  }, [isInjecting]);
 
   useEffect(() => {
     if (!toast) {
@@ -27,7 +48,8 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
         const scenarioName = toast.message.replace("Injecting Telemetry: ", "").toLowerCase();
         setBusy(scenarioName);
         setLogs([
-          `[${new Date().toLocaleTimeString()}] [INIT] Initiating telemetry injection: ${scenarioName}...`
+          `[INIT] Initiating telemetry injection pipeline: ${scenarioName}...`,
+          `[STREAM] Connecting to Ingestion Highway gateway...`
         ]);
         if (onSimulationStateChange) {
           onSimulationStateChange(true);
@@ -35,17 +57,15 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
       } else if (toast.message === "Telemetry Highway Ingestion Active") {
         setLogs((prev) => [
           ...prev,
-          `[${new Date().toLocaleTimeString()}] [SUCCESS] Ingestion pipeline started. Streaming telemetry events to highway...`,
-          `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streaming raw events (30/30)...`
+          `[STREAM] Telemetry Highway Ingestion Active: dispatching raw burst stream`,
         ]);
       }
     } else if (toast.type === "success") {
       setLogs((prev) => [
-        ...prev.filter(l => !l.includes("[INGEST]")),
-        `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streamed 30/30 raw events`,
-        `[${new Date().toLocaleTimeString()}] [EMBED] Vector Embedding Engine: Computed 30 trace embeddings`,
-        `[${new Date().toLocaleTimeString()}] [GROUP] Incident Threading: Correlating traces and suppression...`,
-        `[${new Date().toLocaleTimeString()}] [DONE] Simulation completed. Streamed to Real-Time SSE channel.`
+        ...prev.filter(l => !l.includes("[STREAM] Processed:")),
+        `[STREAM] Telemetry Ingestion: Streamed 30/30 raw events successfully`,
+        `[EMBED] Vector Embedding Engine: Computed 30 trace embeddings (cosine similarity checks)`,
+        `[DONE] ✔ Simulation completed. pipeline synchronized to Real-Time SSE channel.`
       ]);
       setBusy("");
       if (onSimulationStateChange) {
@@ -57,7 +77,7 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
     } else if (toast.type === "error") {
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${toast.sub}`
+        `[WARN] Ingestion failure alert: ${toast.sub}`
       ]);
       setBusy("");
       if (onSimulationStateChange) {
@@ -71,70 +91,133 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
     await triggerTelemetryInjection(currentOrg.id, scenario, count);
   };
 
+  const formatLogLine = (line: string) => {
+    const timeStr = `[${new Date().toLocaleTimeString()}]`;
+    if (line.startsWith("[INIT]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5">[INIT]</span>
+          <span className="text-slate-300">{line.replace("[INIT]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[STREAM]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5">[STREAM]</span>
+          <span className="text-slate-300">{line.replace("[STREAM]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[WARN]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-amber-400 font-bold mr-1.5">[WARN]</span>
+          <span className="text-slate-300">{line.replace("[WARN]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[DONE]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5">[DONE] ✔</span>
+          <span className="text-slate-200 font-semibold">{line.replace("[DONE]", "").replace("✔", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[EMBED]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5">[EMBED]</span>
+          <span className="text-slate-300">{line.replace("[EMBED]", "")}</span>
+        </div>
+      );
+    }
+    return <div key={line} className="text-slate-400">{line}</div>;
+  };
+
   return (
-    <div className="card border border-[#252940] shadow-2xl p-6 flex flex-col gap-4 bg-[#161928]">
+    <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-6 flex flex-col gap-4 shadow-xl">
       <div className="flex items-center gap-2">
         <Terminal className="w-5 h-5 text-cyan-400 animate-pulse" />
         <div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
             Telemetry Simulation Pipeline
           </h3>
-          <p className="text-white/40 text-xs">Inject high-volume telemetry traffic to validate semantic clustering and deduplication</p>
+          <p className="text-slate-400 text-xs">Inject high-volume telemetry traffic to validate semantic clustering and deduplication</p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
         {/* Error Burst */}
         <button
-          className={`btn border px-4 py-2.5 text-xs font-bold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "error-burst"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.05)]"
+              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("error-burst", 30)}
         >
-          <Zap className="w-4 h-4 mr-2 text-amber-400" />
+          <Zap className="w-4 h-4 mr-2 text-amber-400 fill-amber-400/20" />
           <span>{busy === "error-burst" ? "Simulating..." : "Run Error Burst Scenario (30 events)"}</span>
         </button>
 
         {/* LogHub HDFS Outage */}
         <button
-          className={`btn border px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "loghub-hdfs-outage"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.05)]"
+              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("loghub-hdfs-outage", 30)}
         >
-          <Database className="w-4 h-4 mr-2 text-cyan-400" />
+          <Database className="w-4 h-4 mr-2 text-cyan-400 fill-cyan-400/20" />
           <span>{busy === "loghub-hdfs-outage" ? "Simulating..." : "Run LogHub HDFS Outage (30 events)"}</span>
         </button>
 
         {/* Database Outage */}
         <button
-          className={`btn border px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "database-outage"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.05)]"
+              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("database-outage", 30)}
         >
-          <Layers className="w-4 h-4 mr-2 text-rose-400" />
+          <Layers className="w-4 h-4 mr-2 text-rose-400 fill-rose-400/20" />
           <span>{busy === "database-outage" ? "Simulating..." : "Run Database Outage (30 events)"}</span>
         </button>
       </div>
 
       {/* Terminal Log Output Drawer */}
       {logs.length > 0 && (
-        <div className="bg-[#0B0C14] border border-[#252940] font-mono text-xs text-slate-300 p-3 rounded flex flex-col gap-1.5 shadow-inner">
-          {logs.map((log, idx) => (
-            <div key={idx} className="leading-relaxed font-mono tracking-tight">
-              {log}
-            </div>
-          ))}
+        <div className="bg-black/80 border border-slate-800 rounded-xl font-mono text-xs text-slate-300 p-4 shadow-2xl flex flex-col gap-2">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-2 mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+            <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
+            {isInjecting && (
+              <span className="text-cyan-400 font-bold animate-pulse">
+                [Processed: {processedCount} / 30 events]
+              </span>
+            )}
+          </div>
+          
+          <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto font-mono">
+            {logs.map((log) => formatLogLine(log))}
+            
+            {isInjecting && processedCount < 30 && (
+              <div className="text-emerald-400 font-bold animate-pulse font-mono">
+                &gt;&gt; [STREAM] Processed: {processedCount} / 30 events...
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

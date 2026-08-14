@@ -16,6 +16,7 @@ import {
   type NoiseReductionKPIs,
 } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useTelemetryInjection } from "../context/TelemetryToastContext";
 import { useIncidentStream } from "../hooks/useIncidentStream";
 import { SeverityBadge, fmtTime } from "../ui";
 import PageHeader from "../components/PageHeader";
@@ -199,6 +200,7 @@ type Range = "TODAY" | "24H" | "7D";
 
 export default function LiveMonitor() {
   const { currentOrg } = useAuth();
+  const { triggerTelemetryInjection, isInjecting } = useTelemetryInjection();
 
   const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -208,6 +210,11 @@ export default function LiveMonitor() {
   const [range, setRange] = useState<Range>("24H");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const inflight = useRef<Promise<unknown> | null>(null);
+
+  const handleInject = async (scenario: string) => {
+    if (!currentOrg) return;
+    await triggerTelemetryInjection(currentOrg.id, scenario, 30, load);
+  };
 
   const load = useCallback(async () => {
     if (!currentOrg) return;
@@ -306,6 +313,49 @@ export default function LiveMonitor() {
         actions={rangeSelector}
         description="Real-time incident throughput, automated suppression windows, and HDFS hot spots."
       />
+
+      {/* Ingestion Trigger Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-2 w-2">
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isInjecting ? "bg-amber-400" : "bg-emerald-400"} opacity-75`} />
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${isInjecting ? "bg-amber-500" : "bg-emerald-500"}`} />
+          </span>
+          <div className="flex flex-col text-left">
+            <span className="text-xs font-bold text-slate-200">Live Ingestion Highway</span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Status: <span className={isInjecting ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>{isInjecting ? "STREAMING..." : "READY"}</span>
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => handleInject("error-burst")}
+            disabled={isInjecting}
+            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+            <span>⚡ Inject Error Burst</span>
+          </button>
+          <button
+            onClick={() => handleInject("cascading-failure")}
+            disabled={isInjecting}
+            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+          >
+            <Zap className="w-3.5 h-3.5 text-rose-400 fill-rose-400/20" />
+            <span>💥 Cascading Outage</span>
+          </button>
+          <button
+            onClick={() => handleInject("cpu-spike")}
+            disabled={isInjecting}
+            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+          >
+            <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
+            <span>📈 CPU Load Spike</span>
+          </button>
+        </div>
+      </div>
 
       {/* Core Visual Anchor 1: Executive Noise Reduction Ratio Panel */}
       <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} />

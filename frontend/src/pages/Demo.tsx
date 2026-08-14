@@ -53,7 +53,10 @@ export default function Demo() {
   
   const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
   const [cooldowns, setCooldowns] = useState<CooldownState[]>([]);
-  const { triggerTelemetryInjection } = useTelemetryInjection();
+  const { toast, isInjecting, triggerTelemetryInjection } = useTelemetryInjection();
+  
+  const [logs, setLogs] = useState<string[]>([]);
+  const [processedCount, setProcessedCount] = useState(0);
 
   const loadFeedData = useCallback(async () => {
     if (!currentOrg) return;
@@ -74,6 +77,57 @@ export default function Demo() {
 
   // Connect to incident stream for real-time live updates
   useIncidentStream(currentOrg?.id, loadFeedData);
+
+  // Live timer ticks for terminal
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isInjecting) {
+      setProcessedCount(0);
+      interval = setInterval(() => {
+        setProcessedCount((prev) => {
+          if (prev >= count) {
+            clearInterval(interval);
+            return count;
+          }
+          return prev + 1;
+        });
+      }, 75); // ~2.2 seconds to reach 30
+    } else {
+      setProcessedCount(count);
+    }
+    return () => clearInterval(interval);
+  }, [isInjecting, count]);
+
+  useEffect(() => {
+    if (!toast) return;
+
+    if (toast.type === "loading") {
+      if (toast.message.startsWith("Injecting Telemetry")) {
+        const scenarioName = toast.message.replace("Injecting Telemetry: ", "").toLowerCase();
+        setLogs([
+          `[INIT] Initiating telemetry injection pipeline: ${scenarioName}...`,
+          `[STREAM] Connecting to Ingestion Highway gateway...`
+        ]);
+      } else if (toast.message === "Telemetry Highway Ingestion Active") {
+        setLogs((prev) => [
+          ...prev,
+          `[STREAM] Telemetry Highway Ingestion Active: dispatching raw burst stream`,
+        ]);
+      }
+    } else if (toast.type === "success") {
+      setLogs((prev) => [
+        ...prev.filter(l => !l.includes("[STREAM] Processed:")),
+        `[STREAM] Telemetry Ingestion: Streamed ${count}/${count} raw events successfully`,
+        `[EMBED] Vector Embedding Engine: Computed ${count} trace embeddings (cosine similarity checks)`,
+        `[DONE] ✔ Simulation completed. pipeline synchronized to Real-Time SSE channel.`
+      ]);
+    } else if (toast.type === "error") {
+      setLogs((prev) => [
+        ...prev,
+        `[WARN] Ingestion failure alert: ${toast.sub}`
+      ]);
+    }
+  }, [toast, count]);
 
   async function run(scenario: string) {
     if (!currentOrg) return;
@@ -103,6 +157,56 @@ export default function Demo() {
     return <Activity className="w-5 h-5 text-indigo-400" />;
   };
 
+  const formatLogLine = (line: string) => {
+    const timeStr = `[${new Date().toLocaleTimeString()}]`;
+    if (line.startsWith("[INIT]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5">[INIT]</span>
+          <span className="text-slate-300">{line.replace("[INIT]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[STREAM]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5">[STREAM]</span>
+          <span className="text-slate-300">{line.replace("[STREAM]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[WARN]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-amber-400 font-bold mr-1.5">[WARN]</span>
+          <span className="text-slate-300">{line.replace("[WARN]", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[DONE]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5">[DONE] ✔</span>
+          <span className="text-slate-200 font-semibold">{line.replace("[DONE]", "").replace("✔", "")}</span>
+        </div>
+      );
+    }
+    if (line.startsWith("[EMBED]")) {
+      return (
+        <div key={line}>
+          <span className="text-slate-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5">[EMBED]</span>
+          <span className="text-slate-300">{line.replace("[EMBED]", "")}</span>
+        </div>
+      );
+    }
+    return <div key={line} className="text-slate-400">{line}</div>;
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6 font-sans">
       {/* Standard Header */}
@@ -121,7 +225,7 @@ export default function Demo() {
         {/* Scenario selection & configuration */}
         <div className="lg:col-span-8 space-y-6">
           {/* Rate config */}
-          <div className="card border border-slate-800 bg-slate-900/40 p-5 rounded-2xl">
+          <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-5">
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-1.5 font-mono">
               <Terminal className="w-4 h-4 text-cyan-400" />
               <span>Ingestion Rate Controller</span>
@@ -163,7 +267,7 @@ export default function Demo() {
                 return (
                   <div 
                     key={s.id} 
-                    className="card border border-slate-800/80 bg-slate-900/20 hover:border-slate-700/80 transition flex flex-col justify-between shadow-lg"
+                    className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl flex flex-col justify-between shadow-lg"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-2">
@@ -186,12 +290,36 @@ export default function Demo() {
               })}
             </div>
           </div>
+
+          {/* Terminal log output */}
+          {logs.length > 0 && (
+            <div className="bg-black/80 border border-slate-800 rounded-xl font-mono text-xs text-slate-300 p-4 shadow-2xl flex flex-col gap-2">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2 mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+                <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
+                {isInjecting && (
+                  <span className="text-cyan-400 font-bold animate-pulse font-mono">
+                    [Processed: {processedCount} / {count} events]
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto font-mono">
+                {logs.map((log) => formatLogLine(log))}
+                
+                {isInjecting && processedCount < count && (
+                  <div className="text-emerald-400 font-bold animate-pulse font-mono">
+                    &gt;&gt; [STREAM] Processed: {processedCount} / {count} events...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Results Diagnostic Card on the right */}
         <div className="lg:col-span-4">
           {result ? (
-            <div className="card border border-slate-800 bg-slate-900/40 p-5 rounded-2xl animate-fade-in space-y-4">
+            <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-5 animate-fade-in space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
                   <h2 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
@@ -251,7 +379,7 @@ export default function Demo() {
               </div>
             </div>
           ) : (
-            <div className="border border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500 text-xs italic bg-slate-900/10">
+            <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-8 text-center text-slate-500 text-xs italic">
               Diagnostic report will generate here when scenario runs...
             </div>
           )}
