@@ -49,7 +49,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
           onClick={handleLogoClick} 
           className="flex items-center gap-2 text-white font-bold text-sm tracking-tight hover:opacity-90"
         >
-          <Radio className="w-4 h-4 text-[#7C87F7] animate-pulse" />
+          <Radio className="w-4 h-4 text-signal animate-pulse" />
           <span>Telemetry Highway</span>
         </a>
 
@@ -116,7 +116,7 @@ export default function Navbar({ onOpenAuth }: NavbarProps) {
         </button>
         <button
           onClick={onOpenAuth}
-          className="bg-gradient-to-r from-[#98A4F7] to-[#5B63D3] text-white font-medium px-3.5 py-1.5 rounded-[6px] hover:opacity-90 transition cursor-pointer"
+          className="bg-signal hover:bg-signalSoft text-ink font-bold px-3.5 py-1.5 rounded-md transition cursor-pointer shadow-signal"
         >
           Try Demo / Start Free
         </button>

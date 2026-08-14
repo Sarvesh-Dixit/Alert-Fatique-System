@@ -4,17 +4,29 @@
 
 :root {
   color-scheme: dark;
+  --signal: #a3e635;
+  --signal-soft: #dff7a6;
+  --ink: #0b0c14;
+  --panel: #12141f;
+  --panel-hi: #171926;
+  --hair: #252940;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  background: #0B0C14; /* bg-ink */
-  color: #C9D3EE;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background: var(--ink);
+  color: #c9d3ee;
+}
+
+/* selection uses signature accent */
+::selection {
+  background: rgba(163, 230, 53, 0.35);
+  color: #ffffff;
 }
 
 .homepage-heading-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #C9D3EE 65%, #646E87 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #c9d3ee 55%, #a3e635 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -28,26 +40,100 @@ body {
   border-color: rgba(114, 125, 161, 0.15);
 }
 
-@layer components {
-  .card {
-    @apply bg-cardBg border border-borderDark rounded-xl p-5 shadow-lg;
+/* Scrollbars in the accent language */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(163, 230, 53, 0.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(163, 230, 53, 0.2);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 230, 53, 0.4);
+}
+
+@keyframes signal-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(163, 230, 53, 0.45);
   }
+  50% {
+    box-shadow: 0 0 0 8px rgba(163, 230, 53, 0);
+  }
+}
+.animate-signal-pulse {
+  animation: signal-pulse 2s ease-out infinite;
+}
+
+@layer components {
+  /* Cards & panels */
+  .card {
+    @apply bg-panel border border-borderDark rounded-2xl p-5 shadow-panel;
+  }
+  .panel {
+    @apply bg-panel border border-borderDark rounded-2xl;
+  }
+  .panel-hi {
+    @apply bg-panelHi border border-borderDark rounded-2xl;
+  }
+  /* Hero panel — signature glow, used for the NRR & Cooldown Matrix heroes */
+  .panel-hero {
+    @apply bg-panel border border-signal/40 rounded-2xl;
+    box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.12),
+      0 24px 60px -30px rgba(163, 230, 53, 0.35);
+  }
+
+  /* Buttons */
   .btn {
-    @apply bg-neonBlue hover:bg-neonBlue/90 text-white font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50;
+    @apply bg-signal text-ink font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:bg-signalSoft;
   }
   .btn-accent {
-    @apply bg-neonCyan text-ink hover:bg-neonCyan/90 font-bold px-4 py-2.5 rounded-lg transition disabled:opacity-50 shadow-[0_0_15px_rgba(0,240,255,0.2)];
+    @apply bg-signal text-ink font-bold px-4 py-2.5 rounded-lg transition disabled:opacity-50 hover:bg-signalSoft;
+  }
+  .btn-signal {
+    @apply bg-signal text-ink font-bold px-4 py-2.5 rounded-lg transition disabled:opacity-50 hover:bg-signalSoft shadow-signal;
   }
   .btn-ghost {
-    @apply border border-white/10 hover:bg-white/5 px-3 py-1.5 rounded-lg text-sm transition;
+    @apply border border-white/10 hover:bg-white/5 hover:border-signal/40 px-3 py-1.5 rounded-lg text-sm transition;
   }
+  .btn-outline {
+    @apply border border-signal/40 text-signal hover:bg-signal/10 px-3 py-1.5 rounded-lg text-sm font-semibold transition;
+  }
+
+  /* Inputs */
   .input {
-    @apply w-full bg-ink border border-borderDark rounded-lg px-3 py-2 outline-none focus:border-neonCyan;
+    @apply w-full bg-ink border border-borderDark rounded-lg px-3 py-2 outline-none focus:border-signal/60 focus:ring-1 focus:ring-signal/25 transition;
   }
   .label {
     @apply block text-sm text-white/60 mb-1;
   }
+
+  /* Badges & pills */
   .badge {
     @apply text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+  .pill {
+    @apply text-[10px] font-mono uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-white/25 transition cursor-pointer;
+  }
+  .pill-active {
+    @apply text-[10px] font-mono uppercase tracking-widest px-3 py-1.5 rounded-full border bg-signal/15 border-signal/40 text-signalSoft cursor-pointer;
+  }
+
+  /* Signal indicator (small pulsing dot + label) */
+  .live-dot {
+    @apply relative inline-flex h-2 w-2;
+  }
+  .live-dot::before {
+    content: "";
+    @apply absolute inline-flex h-full w-full rounded-full bg-signal opacity-70 animate-ping;
+  }
+  .live-dot::after {
+    content: "";
+    @apply relative inline-flex rounded-full h-2 w-2 bg-signal;
   }
 }

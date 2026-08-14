@@ -29,13 +29,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const activeClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
       isActive
-        ? "bg-[#727DA1]/15 text-cyan-400 border-l-2 border-cyan-400 shadow-sm"
-        : "text-white/65 hover:bg-[#727DA1]/10 hover:text-white"
+        ? "bg-signal/10 text-signal border-l-2 border-signal shadow-sm"
+        : "text-white/65 hover:bg-white/5 hover:text-white"
     }`;
 
   const activeSubClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-1.5 rounded-md text-[11px] font-medium transition ${
-      isActive ? "text-cyan-400 font-bold" : "text-white/40 hover:text-white hover:bg-[#727DA1]/10"
+      isActive ? "text-signal font-bold" : "text-white/40 hover:text-white hover:bg-white/5"
     }`;
 
   return (
@@ -47,13 +47,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           className="cursor-pointer hover:scale-110 transition-transform" 
           onClick={() => navigate("/")}
         >
-          <Radio className="w-6 h-6 text-cyan-400 animate-pulse" />
+          <Radio className="w-6 h-6 text-signal animate-pulse" />
         </div>
 
         {/* System Icons (Bottom) */}
         <div className="flex flex-col gap-6 text-white/40">
           <button 
-            className="hover:text-cyan-400 transition cursor-pointer" 
+            className="hover:text-signal transition cursor-pointer" 
             title="System Settings" 
             onClick={() => navigate("/settings")}
           >
@@ -112,8 +112,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
                 isActive && location.pathname === "/incidents"
-                  ? "bg-[#727DA1]/15 text-cyan-400 border-l-2 border-cyan-400 shadow-sm"
-                  : "text-white/65 hover:bg-[#727DA1]/10 hover:text-white"
+                  ? "bg-signal/10 text-signal border-l-2 border-signal shadow-sm"
+                  : "text-white/65 hover:bg-white/5 hover:text-white"
               }`
             }
           >
