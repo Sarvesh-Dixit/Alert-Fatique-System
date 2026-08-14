@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type Incident, type NoiseReductionKPIs, type CooldownState } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useIncidentStream } from "../hooks/useIncidentStream";
@@ -26,9 +26,12 @@ export default function Incidents() {
   const [statusFilter, setStatusFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const isFetchingRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!currentOrg) return;
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     const params = new URLSearchParams();
     if (statusFilter) params.append("status", statusFilter);
     if (severityFilter) params.append("severity", severityFilter);
@@ -46,6 +49,7 @@ export default function Incidents() {
     } catch (err) {
       console.error("Failed to load incidents", err);
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
     }
   }, [currentOrg, statusFilter, severityFilter]);

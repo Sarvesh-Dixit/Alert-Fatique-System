@@ -39,7 +39,9 @@ if not db_url.startswith("sqlite"):
                 "connect_timeout": 10,
                 # 15s server-side statement timeout: prevents a slow query
                 # from monopolizing a pool connection.
-                "options": "-c statement_timeout=15000",
+                # 3s server-side statement timeout: prevents a slow query
+                # from monopolizing a pool connection.
+                "options": "-c statement_timeout=3000",
             },
         }
     )
