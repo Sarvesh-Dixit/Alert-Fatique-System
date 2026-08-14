@@ -43,3 +43,10 @@ class RetentionUpdate(BaseModel):
     raw_telemetry_days: int | None = Field(default=None, ge=1, le=365)
     incident_days: int | None = Field(default=None, ge=1, le=3650)
     audit_days: int | None = Field(default=None, ge=1, le=3650)
+
+
+class RoleUpdate(BaseModel):
+    """RBAC role change body. Kept out of the URL so RBAC changes do not leak
+    into proxy access logs."""
+
+    role: str = Field(min_length=1, max_length=20)

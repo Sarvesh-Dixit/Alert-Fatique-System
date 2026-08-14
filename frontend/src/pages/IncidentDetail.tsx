@@ -45,6 +45,7 @@ export default function IncidentDetail() {
   const [inc, setInc] = useState<IncidentDetailT | null>(null);
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
   const [showEvents, setShowEvents] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
   const load = useCallback(async () => {
     if (!currentOrg || !incidentId) return;
@@ -59,8 +60,16 @@ export default function IncidentDetail() {
 
   async function loadEvents() {
     if (!currentOrg || !incidentId) return;
-    setEvents(await api.get<TelemetryEvent[]>(`/organizations/${currentOrg.id}/incidents/${incidentId}/events?limit=100`));
+    setLoadingEvents(true);
     setShowEvents(true);
+    try {
+      const rows = await api.get<TelemetryEvent[]>(
+        `/organizations/${currentOrg.id}/incidents/${incidentId}/events?limit=100`,
+      );
+      setEvents(rows);
+    } finally {
+      setLoadingEvents(false);
+    }
   }
 
   async function setStatus(status: string) {
@@ -172,6 +181,11 @@ export default function IncidentDetail() {
           )}
         </div>
         {showEvents && (
+          loadingEvents ? (
+            <div className="text-white/40 text-sm py-8 text-center">Loading events…</div>
+          ) : events.length === 0 ? (
+            <div className="text-white/40 text-sm py-8 text-center">No raw events found.</div>
+          ) : (
           <div className="overflow-x-auto mt-4">
             <table className="w-full text-xs text-left">
               <thead>
@@ -194,6 +208,7 @@ export default function IncidentDetail() {
               </tbody>
             </table>
           </div>
+          )
         )}
       </div>
     </div>

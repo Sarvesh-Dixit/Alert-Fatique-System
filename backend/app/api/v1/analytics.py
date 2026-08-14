@@ -99,20 +99,24 @@ def executive_analytics(
         .group_by(Application.name).order_by(func.count(TelemetryEvent.id).desc()).limit(5)
     ).all()
 
-    # Top devices by ingested (agent) events.
-    device_rows = db.scalars(select(AgentDevice).where(AgentDevice.organization_id == org)).all()
-    device_counts = []
-    for d in device_rows:
-        if not d.application_id:
-            continue
-        c = db.scalar(
-            select(func.count()).select_from(TelemetryEvent).where(
-                TelemetryEvent.application_id == d.application_id
-            )
-        ) or 0
-        device_counts.append({"hostname": d.hostname, "os": d.operating_system, "events": int(c),
-                              "status": d.status})
-    device_counts.sort(key=lambda x: x["events"], reverse=True)
+    # Top devices by ingested (agent) events. Single GROUP BY join (no N+1).
+    device_rows = db.execute(
+        select(
+            AgentDevice.hostname,
+            AgentDevice.operating_system,
+            AgentDevice.status,
+            func.count(TelemetryEvent.id).label("events"),
+        )
+        .select_from(AgentDevice)
+        .outerjoin(TelemetryEvent, TelemetryEvent.application_id == AgentDevice.application_id)
+        .where(AgentDevice.organization_id == org, AgentDevice.application_id.isnot(None))
+        .group_by(AgentDevice.id, AgentDevice.hostname, AgentDevice.operating_system, AgentDevice.status)
+        .order_by(func.count(TelemetryEvent.id).desc())
+    ).all()
+    device_counts = [
+        {"hostname": h, "os": os_, "events": int(c or 0), "status": s}
+        for h, os_, s, c in device_rows
+    ]
 
     # Regional health.
     region_rows = db.execute(

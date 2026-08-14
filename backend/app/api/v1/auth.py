@@ -8,10 +8,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.config import settings
 from app.core.audit import record_audit
 from app.core.ids import new_id
 from app.core.security import create_access_token, hash_password, verify_password
 from app.database import get_db
+from app.models.integration import RetentionPolicy
 from app.models.organization import Organization, OrganizationMember
 from app.models.user import User
 from app.schemas.auth import (
@@ -47,6 +49,16 @@ def register(payload: RegisterRequest, request: Request, db: Session = Depends(g
     db.flush()
 
     db.add(OrganizationMember(organization_id=org.id, user_id=user.id, role="owner"))
+    # Seed an explicit retention policy for the org rather than relying on
+    # lazy creation the first time an admin visits the retention page.
+    db.add(
+        RetentionPolicy(
+            organization_id=org.id,
+            raw_telemetry_days=settings.retention_raw_telemetry_days,
+            incident_days=settings.retention_incident_days,
+            audit_days=settings.retention_audit_days,
+        )
+    )
     record_audit(
         db,
         action="user.register",

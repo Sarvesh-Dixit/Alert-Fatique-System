@@ -59,6 +59,7 @@ export function fmtTime(iso: string | null): string {
   if (!iso) return "—";
   try {
     const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "—";
     return date.toLocaleString(undefined, { 
       hour12: false, 
       month: "short", 
@@ -68,7 +69,7 @@ export function fmtTime(iso: string | null): string {
       second: "2-digit" 
     });
   } catch {
-    return iso;
+    return "—";
   }
 }
 

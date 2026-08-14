@@ -23,6 +23,7 @@ from app.schemas.integration import (
     IntegrationUpdate,
     RetentionResponse,
     RetentionUpdate,
+    RoleUpdate,
 )
 
 router = APIRouter(prefix="/organizations/{organization_id}", tags=["admin"])
@@ -247,13 +248,13 @@ def list_members(
 def change_member_role(
     organization_id: str,
     target_user_id: str,
-    role: str,
+    payload: RoleUpdate,
     request: Request,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     require_org_permission(organization_id, user, db, Permission.MANAGE_MEMBERS)
-    new_role = normalize_role(role).value
+    new_role = normalize_role(payload.role).value
     membership = db.scalar(
         select(OrganizationMember).where(
             OrganizationMember.organization_id == organization_id,

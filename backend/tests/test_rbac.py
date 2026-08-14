@@ -53,7 +53,9 @@ def test_owner_can_change_member_role(client):
     h = {"Authorization": f"Bearer {token}"}
 
     resp = client.post(
-        f"/api/v1/organizations/{org_id}/members/{uid}/role?role=ADMIN", headers=h
+        f"/api/v1/organizations/{org_id}/members/{uid}/role",
+        json={"role": "ADMIN"},
+        headers=h,
     )
     assert resp.status_code == 200
     assert resp.json()["role"] == "ADMIN"
@@ -66,7 +68,8 @@ def test_admin_cannot_change_roles(client):
     atoken = login(client, "admin@ex.com")
 
     resp = client.post(
-        f"/api/v1/organizations/{org_id}/members/{uid}/role?role=VIEWER",
+        f"/api/v1/organizations/{org_id}/members/{uid}/role",
+        json={"role": "VIEWER"},
         headers={"Authorization": f"Bearer {atoken}"},
     )
     assert resp.status_code == 403

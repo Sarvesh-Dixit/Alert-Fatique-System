@@ -104,6 +104,9 @@ _REGISTRY: dict[str, type[NotificationProvider]] = {
     "email": EmailProvider,
 }
 
+# Frozen for O(1) membership checks in the admin router.
+_KNOWN_TYPES: frozenset[str] = frozenset(_REGISTRY)
+
 
 def get_provider(integration_type: str, config: dict) -> NotificationProvider:
     cls = _REGISTRY.get(integration_type)
@@ -112,5 +115,5 @@ def get_provider(integration_type: str, config: dict) -> NotificationProvider:
     return cls(config)
 
 
-def known_types() -> list[str]:
-    return list(_REGISTRY)
+def known_types() -> frozenset[str]:
+    return _KNOWN_TYPES

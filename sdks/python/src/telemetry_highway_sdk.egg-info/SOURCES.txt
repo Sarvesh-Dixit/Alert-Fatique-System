@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/telemetry_highway_sdk.egg-info/PKG-INFO
+src/telemetry_highway_sdk.egg-info/SOURCES.txt
+src/telemetry_highway_sdk.egg-info/dependency_links.txt
+src/telemetry_highway_sdk.egg-info/top_level.txt
+src/telemetry_sdk/__init__.py
+src/telemetry_sdk/client.py
+tests/test_sdk.py

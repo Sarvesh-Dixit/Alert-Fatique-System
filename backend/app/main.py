@@ -1,6 +1,7 @@
 """FastAPI application factory for the Telemetry Highway gateway."""
 from __future__ import annotations
 
+import json
 import logging
 from contextlib import asynccontextmanager
 
@@ -52,15 +53,32 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Clean origins: strip whitespace and trailing slashes
-origins = [
-    origin.strip().rstrip("/")
-    for origin in [
-        "https://alert-fatique-system.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ]
+# Parse, normalize, and sanitize CORS origins
+default_origins = [
+    "https://alert-fatique-system.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
+
+_cors_origins: list[str] = list(default_origins)
+if hasattr(settings, "cors_origins") and settings.cors_origins:
+    raw = settings.cors_origins
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if raw.startswith("[") and raw.endswith("]"):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, list):
+                    _cors_origins.extend([str(o).strip().rstrip("/") for o in parsed if str(o).strip()])
+            except Exception:
+                pass
+        else:
+            _cors_origins.extend([o.strip().rstrip("/") for o in raw.split(",") if o.strip()])
+    elif isinstance(raw, list):
+        _cors_origins.extend([str(o).strip().rstrip("/") for o in raw if str(o).strip()])
+
+# Deduplicate origins while preserving order
+origins = [o for i, o in enumerate(_cors_origins) if o and o not in _cors_origins[:i]]
 
 app.add_middleware(
     CORSMiddleware,

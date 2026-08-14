@@ -361,22 +361,39 @@ async def incident_stream(
     _authorize_stream(token, organization_id, db)
     from app.core.redis_client import get_redis
 
+    channel = realtime.channel_for(organization_id)
+
     async def event_generator():
         pubsub = get_redis().pubsub()
-        pubsub.subscribe(realtime.channel_for(organization_id))
+        # subscribe() is synchronous — run it in a thread so we never block
+        # the event loop even briefly.
+        await asyncio.to_thread(pubsub.subscribe, channel)
         try:
             yield ": connected\n\n"
             while True:
                 if await request.is_disconnected():
                     break
-                msg = pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                # get_message with a timeout is a synchronous blocking call in
+                # redis-py; offloading it keeps the asyncio loop responsive for
+                # every other SSE client and API request.
+                msg = await asyncio.to_thread(
+                    pubsub.get_message, ignore_subscribe_messages=True, timeout=1.0
+                )
                 if msg and msg.get("type") == "message":
                     yield f"data: {msg['data']}\n\n"
                 else:
                     yield ": keep-alive\n\n"
                 await asyncio.sleep(0.2)
         finally:
-            pubsub.close()
+            # Cleanly release the server-side subscription before closing.
+            try:
+                await asyncio.to_thread(pubsub.unsubscribe, channel)
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                await asyncio.to_thread(pubsub.close)
+            except Exception:  # noqa: BLE001
+                pass
 
     return StreamingResponse(
         event_generator(),

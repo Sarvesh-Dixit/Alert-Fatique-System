@@ -71,14 +71,28 @@ def _handle_entry(r, stream, group, entry_id, fields) -> None:
         event = json.loads(fields["data"])
         process_event(db, event)
         r.xack(stream, group, entry_id)
-    except Exception:  # noqa: BLE001 - never let one bad event kill the worker
+    except Exception as exc:  # noqa: BLE001 - never let one bad event kill the worker
         log.exception("Failed to process entry %s", entry_id)
         from app.core import metrics
 
         metrics.incr("worker_failures")
         db.rollback()
-        # We still ack malformed entries to avoid poison-pill loops. A Phase 2
-        # dead-letter stream is the natural extension point here.
+        # Push the poison event onto the dead-letter stream (bounded) BEFORE
+        # ack'ing the main stream. This prevents infinite retry loops while
+        # keeping failed events recoverable for later inspection.
+        try:
+            r.xadd(
+                settings.telemetry_dlq_stream,
+                {
+                    "data": fields.get("data", ""),
+                    "error": str(exc)[:500],
+                    "original_id": str(entry_id),
+                },
+                maxlen=settings.telemetry_dlq_max_len,
+                approximate=True,
+            )
+        except Exception:  # noqa: BLE001
+            log.warning("Could not write entry %s to DLQ", entry_id)
         r.xack(stream, group, entry_id)
     finally:
         db.close()
