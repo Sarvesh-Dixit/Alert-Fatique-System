@@ -16,7 +16,7 @@ elif db_url.startswith("postgresql://"):
 if ":6543" in db_url:
     db_url = db_url.replace(":6543", ":5432")
 
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import QueuePool
 
 # Database session pooling configuration
 engine_kwargs = {
@@ -27,7 +27,11 @@ engine_kwargs = {
 # SQLite does not support pool_size or max_overflow arguments
 if not db_url.startswith("sqlite"):
     engine_kwargs.update({
-        "poolclass": NullPool,
+        "poolclass": QueuePool,
+        "pool_size": 3,
+        "max_overflow": 2,
+        "pool_timeout": 5,
+        "pool_recycle": 300,
         "connect_args": {
             "connect_timeout": 5,
             "options": "-c statement_timeout=5000",

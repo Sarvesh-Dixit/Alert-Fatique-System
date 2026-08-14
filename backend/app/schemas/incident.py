@@ -115,3 +115,12 @@ class CooldownState(BaseModel):
     severity: str
     suppressed_count: int
     status: str
+
+
+from typing import Any
+
+class DashboardFeedResponse(BaseModel):
+    kpis: NoiseReductionKPIs
+    cooldown_matrix: list[CooldownState]
+    incidents: list[IncidentSummary]
+    applications: list[Any]
