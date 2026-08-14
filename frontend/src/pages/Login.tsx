@@ -19,7 +19,7 @@ export default function Login() {
   // Redirect an already-authenticated user AFTER render (not during it) so React
   // does not warn about scheduling a state update mid-render.
   useEffect(() => {
-    if (user) navigate("/overview", { replace: true });
+    if (user) navigate("/monitor", { replace: true });
   }, [user, navigate]);
 
   async function submit(e: React.FormEvent) {
@@ -32,7 +32,7 @@ export default function Login() {
       } else {
         await register(form);
       }
-      navigate("/overview", { replace: true });
+      navigate("/monitor", { replace: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {
