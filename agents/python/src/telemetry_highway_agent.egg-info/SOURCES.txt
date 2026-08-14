@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/telemetry_agent/__init__.py
+src/telemetry_agent/__main__.py
+src/telemetry_agent/agent.py
+src/telemetry_agent/buffer.py
+src/telemetry_agent/client.py
+src/telemetry_agent/collectors.py
+src/telemetry_agent/config.py
+src/telemetry_agent/redact.py
+src/telemetry_highway_agent.egg-info/PKG-INFO
+src/telemetry_highway_agent.egg-info/SOURCES.txt
+src/telemetry_highway_agent.egg-info/dependency_links.txt
+src/telemetry_highway_agent.egg-info/entry_points.txt
+src/telemetry_highway_agent.egg-info/requires.txt
+src/telemetry_highway_agent.egg-info/top_level.txt
+tests/test_agent.py

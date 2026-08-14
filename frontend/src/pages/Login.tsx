@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Radio } from "lucide-react";
@@ -16,9 +16,11 @@ export default function Login() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (user) {
-    navigate("/applications", { replace: true });
-  }
+  // Redirect an already-authenticated user AFTER render (not during it) so React
+  // does not warn about scheduling a state update mid-render.
+  useEffect(() => {
+    if (user) navigate("/overview", { replace: true });
+  }, [user, navigate]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +32,7 @@ export default function Login() {
       } else {
         await register(form);
       }
-      navigate("/applications", { replace: true });
+      navigate("/overview", { replace: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {

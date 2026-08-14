@@ -15,6 +15,8 @@ export default function Integrations() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [form, setForm] = useState({ type: "slack", value: "", min_severity: "HIGH" });
   const [msg, setMsg] = useState("");
+  const [testing, setTesting] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     if (!currentOrg) return;
@@ -30,9 +32,10 @@ export default function Integrations() {
   async function save() {
     if (!currentOrg) return;
     setMsg("");
+    setSaving(true);
     const config = { [meta.field]: form.value };
     try {
-      await api.post(`/organizations/${currentOrg.id}/integrations`, {
+      await api.put(`/organizations/${currentOrg.id}/integrations`, {
         type: form.type,
         config,
         min_severity: form.min_severity,
@@ -43,17 +46,22 @@ export default function Integrations() {
       setMsg("Saved.");
     } catch (e) {
       setMsg((e as Error).message);
+    } finally {
+      setSaving(false);
     }
   }
 
   async function test(type: string) {
     if (!currentOrg) return;
     setMsg("");
+    setTesting(type);
     try {
       await api.post(`/organizations/${currentOrg.id}/integrations/${type}/test`);
       setMsg(`Test notification sent via ${type}.`);
     } catch (e) {
       setMsg((e as Error).message);
+    } finally {
+      setTesting(null);
     }
   }
 
@@ -90,7 +98,9 @@ export default function Integrations() {
             </select>
           </div>
         </div>
-        <button className="btn mt-4" onClick={save} disabled={!form.value}>Save integration</button>
+        <button className="btn mt-4" onClick={save} disabled={!form.value || saving}>
+          {saving ? "Saving…" : "Save integration"}
+        </button>
         {msg && <span className="ml-3 text-sm text-white/60">{msg}</span>}
       </div>
 
@@ -117,7 +127,9 @@ export default function Integrations() {
                       : <span className="badge bg-emerald-500/20 text-emerald-300">{i.enabled ? "enabled" : "disabled"}</span>}
                   </td>
                   <td className="text-right">
-                    <button className="btn-ghost mr-2" onClick={() => test(i.type)}>Test</button>
+                    <button className="btn-ghost mr-2" onClick={() => test(i.type)} disabled={testing === i.type}>
+                      {testing === i.type ? "Testing…" : "Test"}
+                    </button>
                     <button className="btn-ghost" onClick={() => remove(i.type)}>Remove</button>
                   </td>
                 </tr>

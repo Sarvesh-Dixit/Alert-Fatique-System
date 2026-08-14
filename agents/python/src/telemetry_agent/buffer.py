@@ -57,13 +57,31 @@ class LocalBuffer:
         with self._lock:
             return len(self._dq)
 
-    def flush_to_disk(self) -> None:
+    def flush_to_disk(self, max_bytes: int = 8 * 1024 * 1024) -> None:
+        """Persist buffered events to a single JSONL file, capped at ``max_bytes``.
+
+        Rewrites (does not append) so repeated crashes cannot grow the file
+        without bound. Newest events are prioritized when the cap would be
+        exceeded — older events are dropped and counted.
+        """
         if not self.spill_path:
             return
         with self._lock:
             if not self._dq:
                 return
             self.spill_path.parent.mkdir(parents=True, exist_ok=True)
+            # Serialize newest→oldest so we can truncate to the cap while
+            # keeping the freshest events.
+            payloads: list[str] = []
+            total = 0
+            for ev in reversed(self._dq):
+                line = json.dumps(ev) + "\n"
+                size = len(line.encode("utf-8"))
+                if total + size > max_bytes:
+                    self.dropped += 1
+                    continue
+                payloads.append(line)
+                total += size
+            payloads.reverse()  # restore chronological order on disk
             with self.spill_path.open("w", encoding="utf-8") as fh:
-                for ev in self._dq:
-                    fh.write(json.dumps(ev) + "\n")
+                fh.writelines(payloads)

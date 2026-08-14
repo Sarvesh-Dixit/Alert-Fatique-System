@@ -11,7 +11,7 @@ dashboard even without the background worker running.
 from __future__ import annotations
 
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
@@ -65,8 +65,21 @@ def _ensure_demo_apps(db: Session, organization_id: str, n: int) -> list[Applica
     return apps[:n]
 
 
+_EVENT_COUNTER = 0
+
+
 def _event(app: Application, **over) -> dict:
-    now = datetime.now(timezone.utc).isoformat()
+    """Return one canonical demo event.
+
+    Each event gets a slightly incremented timestamp (a few ms apart) so a
+    single simulation spans a realistic window rather than all events sharing
+    the exact same instant. This lets cooldown/spike logic exercise
+    time-based behavior end-to-end.
+    """
+    global _EVENT_COUNTER
+    _EVENT_COUNTER += 1
+    ts = datetime.now(timezone.utc) + timedelta(milliseconds=_EVENT_COUNTER)
+    iso = ts.isoformat()
     base = {
         "event_id": new_id("evt"),
         "organization_id": app.organization_id,
@@ -78,8 +91,8 @@ def _event(app: Application, **over) -> dict:
         "event_type": "log",
         "severity": "INFO",
         "message": "",
-        "timestamp": now,
-        "received_at": now,
+        "timestamp": iso,
+        "received_at": iso,
         "metadata": {},
     }
     base.update(over)

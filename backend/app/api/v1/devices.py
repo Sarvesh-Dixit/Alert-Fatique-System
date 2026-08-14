@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -42,6 +42,8 @@ def _ip(request: Request) -> str | None:
 @router.get("/organizations/{organization_id}/devices", response_model=list[DeviceResponse])
 def list_devices(
     organization_id: str,
+    limit: int = Query(default=200, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -50,6 +52,8 @@ def list_devices(
         select(AgentDevice)
         .where(AgentDevice.organization_id == organization_id)
         .order_by(AgentDevice.created_at.desc())
+        .limit(limit)
+        .offset(offset)
     ).all()
 
 

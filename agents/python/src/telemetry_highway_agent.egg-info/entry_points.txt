@@ -1,0 +1,2 @@
+[console_scripts]
+th-agent = telemetry_agent.__main__:main

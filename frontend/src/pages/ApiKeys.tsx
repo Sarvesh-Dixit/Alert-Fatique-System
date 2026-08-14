@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, type ApiKey } from "../api/client";
+import { api, type ApiKey, type Application } from "../api/client";
+import StarterSnippets from "../components/StarterSnippets";
 import { EmptyState, fmtTime } from "../ui";
 
 export default function ApiKeys() {
   const { appId } = useParams();
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [app, setApp] = useState<Application | null>(null);
   const [newKey, setNewKey] = useState<string | null>(null);
   const [name, setName] = useState("default");
   const [copied, setCopied] = useState(false);
 
   async function load() {
-    setKeys(await api.get<ApiKey[]>(`/applications/${appId}/api-keys`));
+    const [k, a] = await Promise.all([
+      api.get<ApiKey[]>(`/applications/${appId}/api-keys`),
+      api.get<Application>(`/applications/${appId}`),
+    ]);
+    setKeys(k);
+    setApp(a);
   }
   useEffect(() => {
     load();
@@ -52,23 +59,46 @@ export default function ApiKeys() {
       </div>
 
       {newKey && (
-        <div className="card mb-6 border-emerald-500/40 bg-[#161928]">
-          <div className="text-emerald-300 font-semibold mb-1">New API key — copy it now, it won't be shown again</div>
-          <code className="block bg-[#0B0C14] border border-[#252940] p-3 rounded-lg break-all text-sm font-mono tracking-tight">{newKey}</code>
-          <div className="flex gap-2 mt-3">
-            <button 
-              className="btn-ghost" 
-              onClick={() => {
-                navigator.clipboard.writeText(newKey);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
-            <button className="btn-ghost" onClick={() => setNewKey(null)}>Dismiss</button>
+        <>
+          <div className="card mb-6 border-emerald-500/40 bg-[#161928]">
+            <div className="text-emerald-300 font-semibold mb-1">New API key — copy it now, it won't be shown again</div>
+            <code className="block bg-[#0B0C14] border border-[#252940] p-3 rounded-lg break-all text-sm font-mono tracking-tight">{newKey}</code>
+            <div className="flex gap-2 mt-3">
+              <button 
+                className="btn-ghost" 
+                onClick={() => {
+                  navigator.clipboard.writeText(newKey);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+              <button className="btn-ghost" onClick={() => setNewKey(null)}>Dismiss</button>
+            </div>
           </div>
-        </div>
+
+          <StarterSnippets
+            apiKey={newKey}
+            service={app?.name ?? "my-app"}
+            environment={app?.environment ?? "production"}
+          />
+        </>
+      )}
+
+      {!newKey && keys.length > 0 && (
+        <details className="card mb-6 border border-[#252940] bg-[#161928]">
+          <summary className="cursor-pointer text-sm font-semibold text-white/80 select-none">
+            📋 Integration code (Node.js · Python · cURL)
+          </summary>
+          <div className="mt-4">
+            <StarterSnippets
+              apiKey="YOUR_API_KEY_HERE"
+              service={app?.name ?? "my-app"}
+              environment={app?.environment ?? "production"}
+            />
+          </div>
+        </details>
       )}
 
       <div className="card border border-[#252940] bg-[#161928]">

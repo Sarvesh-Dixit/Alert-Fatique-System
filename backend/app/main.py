@@ -52,11 +52,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — the Vite dashboard talks to this API from the browser.
+# CORS — the Vite dashboard talks to this API from the browser. Origins are
+# configurable via CORS_ORIGINS (comma-separated); "*" allows anything (dev).
+_origins_raw = settings.cors_origins.strip()
+_cors_origins = ["*"] if _origins_raw == "*" else [
+    o.strip() for o in _origins_raw.split(",") if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if not settings.is_production else [],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    # Credentials cannot be combined with a wildcard origin per the CORS spec.
+    allow_credentials=_cors_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

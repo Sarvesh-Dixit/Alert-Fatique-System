@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     # App
     app_name: str = "Telemetry Highway"
     environment: str = "development"
+    # Comma-separated CORS origins. Use "*" for a permissive dev config; set an
+    # explicit list (e.g. "https://dashboard.example.com") in production so the
+    # frontend can still reach the API through the browser's same-origin policy.
+    cors_origins: str = "*"
 
     # Security
     jwt_secret: str = "change-me-in-production"
@@ -29,6 +33,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     telemetry_stream: str = "telemetry:events"
     telemetry_consumer_group: str = "telemetry-workers"
+    # Dead-letter stream for events the worker fails to process. Kept separate
+    # so poison-pill loops are prevented while data loss is still recoverable.
+    telemetry_dlq_stream: str = "telemetry:dlq"
+    telemetry_dlq_max_len: int = 10_000
 
     # Ingestion limits
     max_payload_bytes: int = 262_144  # 256 KiB

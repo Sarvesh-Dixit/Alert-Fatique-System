@@ -11,12 +11,21 @@ import platform
 import time
 from datetime import datetime, timezone
 
+import logging
+
+log = logging.getLogger("th-agent.collectors")
+
 try:
     import psutil  # type: ignore
 
     _HAS_PSUTIL = True
 except Exception:  # noqa: BLE001
     _HAS_PSUTIL = False
+
+# Only surface the "psutil missing" warning as telemetry at most once per hour;
+# every collection cycle otherwise would flood the gateway (~4 events/min).
+_LAST_PSUTIL_WARN_AT: float = 0.0
+_PSUTIL_WARN_INTERVAL_SECONDS: int = 3600
 
 
 def _now() -> str:
@@ -46,6 +55,15 @@ def _severity_for_usage(pct: float) -> str:
 def collect_metrics(policy: dict, instance: str) -> list[dict]:
     """Collect enabled system metrics as canonical-ish telemetry items."""
     if not _HAS_PSUTIL:
+        global _LAST_PSUTIL_WARN_AT
+
+        now = time.time()
+        # Always log locally so operators notice; only forward telemetry once
+        # per hour to avoid flooding the gateway with identical warnings.
+        log.warning("psutil not installed; metric collection limited")
+        if now - _LAST_PSUTIL_WARN_AT < _PSUTIL_WARN_INTERVAL_SECONDS:
+            return []
+        _LAST_PSUTIL_WARN_AT = now
         return [{
             "service": "host-agent", "event_type": "system", "severity": "WARNING",
             "message": "psutil not installed; metric collection limited",
