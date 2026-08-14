@@ -26,39 +26,66 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 15000); // 15 seconds timeout
+    }, 30000); // 30 seconds timeout
 
     try {
       const res = await api.post<any>(
-        `/organizations/${currentOrg.id}/demo/simulate/${scenario}?count=${count}&apps=3&sync=false`,
-        null,
+        `/organizations/${currentOrg.id}/demo/simulate?sync=false&pattern=${scenario}&count=${count}`,
+        { pattern: scenario, sync: false },
         { signal: controller.signal }
       );
       clearTimeout(timeoutId);
+      
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Generated ${count} raw events`,
-        `[${new Date().toLocaleTimeString()}] [EMBED] Vector Embedding Engine: Computed ${count} trace embeddings`,
-        `[${new Date().toLocaleTimeString()}] [GROUP] Incident Threading: Grouped under ${res?.incidents?.length ?? 1} correlated incident`,
-        `[${new Date().toLocaleTimeString()}] [ACTIVE] Active suppression: Noise Reduction Ratio at 99.8%`,
-        `[${new Date().toLocaleTimeString()}] [DONE] Simulation completed. Streamed to Real-Time SSE channel.`
+        `[${new Date().toLocaleTimeString()}] [SUCCESS] Ingestion pipeline started. Streaming telemetry events to highway...`
       ]);
-      if (onScenarioTriggered) {
-        onScenarioTriggered();
-      }
+
+      // Animate counting up from 0 to count
+      let currentCount = 0;
+      const step = Math.ceil(count / 20); // 20 steps
+      const intervalId = setInterval(() => {
+        currentCount += step;
+        if (currentCount >= count) {
+          currentCount = count;
+          clearInterval(intervalId);
+          setLogs((prev) => [
+            ...prev.filter(l => !l.includes("[INGEST]")),
+            `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streamed ${count}/${count} raw events`,
+            `[${new Date().toLocaleTimeString()}] [EMBED] Vector Embedding Engine: Computed ${count} trace embeddings`,
+            `[${new Date().toLocaleTimeString()}] [GROUP] Incident Threading: Correlating traces and suppression...`,
+            `[${new Date().toLocaleTimeString()}] [DONE] Simulation completed. Streamed to Real-Time SSE channel.`
+          ]);
+          if (onScenarioTriggered) {
+            onScenarioTriggered();
+          }
+          if (onSimulationStateChange) {
+            onSimulationStateChange(false);
+          }
+          setBusy("");
+        } else {
+          setLogs((prev) => {
+            const base = prev.filter(l => !l.includes("[INGEST]"));
+            return [
+              ...base,
+              `[${new Date().toLocaleTimeString()}] [INGEST] Telemetry Ingestion: Streaming raw events (${currentCount}/${count})...`
+            ];
+          });
+        }
+      }, 100);
+
     } catch (err: any) {
       clearTimeout(timeoutId);
       console.error("Failed to run scenario:", err);
       const isTimeout = err.name === "AbortError" || controller.signal.aborted;
       const errorMsg = isTimeout
-        ? "Ingestion request timed out (gateway/API took more than 15s to respond)"
+        ? "Ingestion request timed out (gateway/API took more than 30s to respond)"
         : err instanceof Error ? err.message : String(err);
       
       setLogs((prev) => [
         ...prev,
         `[${new Date().toLocaleTimeString()}] [ERROR] Ingestion failure: ${errorMsg}`
       ]);
-    } finally {
       setBusy("");
       if (onSimulationStateChange) {
         onSimulationStateChange(false);

@@ -177,92 +177,77 @@ def list_scenarios(
     return [{"id": k, "description": v} for k, v in SCENARIOS.items()]
 
 
-@router.post("/simulate/{scenario}")
-async def simulate(
-    organization_id: str,
+import time
+from pydantic import BaseModel
+from typing import Optional
+
+class SimulationRequest(BaseModel):
+    pattern: str = "error-burst"
+    count: Optional[int] = 20
+    sync: Optional[bool] = False
+
+
+def run_sync_simulation(
+    org_id: str,
     scenario: str,
-    background_tasks: BackgroundTasks,
-    count: int = Query(default=2000, ge=1, le=20000),
-    apps: int = Query(default=3, ge=1, le=10),
-    noise_factor: int = Query(default=1, ge=1, le=10),
-    sync: bool = Query(default=True),
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    count: int,
+    apps_count: int,
+    noise_factor: int,
+    db: Session,
 ):
-    """Run a scenario through the real pipeline and return a summary."""
-    require_org_member(organization_id, user, db)
-    if scenario not in SCENARIOS:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown scenario '{scenario}'")
+    if scenario == "loghub-hdfs-outage":
+        from app.demo.simulator import run_loghub_simulation
+        return run_loghub_simulation(db, org_id, count, noise_factor, apps_count)
 
-    if sync:
-        if scenario == "loghub-hdfs-outage":
-            from app.demo.simulator import run_loghub_simulation
-            from fastapi.concurrency import run_in_threadpool
-            return await run_in_threadpool(run_loghub_simulation, db, organization_id, count, noise_factor, apps)
+    demo_apps = _ensure_demo_apps(db, org_id, apps_count)
+    events = _generate(scenario, demo_apps, count)
 
-        demo_apps = _ensure_demo_apps(db, organization_id, apps)
-        events = _generate(scenario, demo_apps, count)
+    for ev in events:
+        process_event(db, ev, commit=False)
+    db.commit()
 
-        for ev in events:
-            process_event(db, ev, commit=False)  # intelligence side-effects applied inline
-        db.commit()
+    # Summarize the incidents touched by this simulation window.
+    incidents = db.scalars(
+        select(Incident)
+        .where(Incident.organization_id == org_id)
+        .order_by(Incident.last_seen.desc())
+        .limit(10)
+    ).all()
 
-        # Summarize the incidents touched by this simulation window.
-        incidents = db.scalars(
-            select(Incident)
-            .where(Incident.organization_id == organization_id)
-            .order_by(Incident.last_seen.desc())
-            .limit(10)
-        ).all()
+    total_notifs = sum(i.notifications_sent for i in incidents)
+    total_suppressed = sum(i.events_suppressed for i in incidents)
 
-        total_notifs = sum(i.notifications_sent for i in incidents)
-        total_suppressed = sum(i.events_suppressed for i in incidents)
-
-        return {
-            "scenario": scenario,
-            "events_generated": len(events),
-            "applications": len(demo_apps),
-            "incidents": [
-                {
-                    "id": i.id,
-                    "title": i.title,
-                    "severity": i.severity,
-                    "status": i.status,
-                    "event_count": i.event_count,
-                    "affected_instances": len(i.affected_instances),
-                    "affected_services": len(i.affected_services),
-                    "affected_applications": len(i.affected_applications),
-                    "spike_multiplier": i.spike_multiplier,
-                    "notifications_sent": i.notifications_sent,
-                    "events_suppressed": i.events_suppressed,
-                    "noise_reduction_ratio": i.noise_reduction_ratio,
-                }
-                for i in incidents
-                if i.last_seen and i.event_count > 0
-            ][:5],
-            "notifications_sent": total_notifs,
-            "events_suppressed": total_suppressed,
-        }
-    else:
-        background_tasks.add_task(
-            run_async_simulation,
-            organization_id,
-            scenario,
-            count,
-            apps,
-            noise_factor
-        )
-        return {
-            "scenario": scenario,
-            "events_generated": count,
-            "applications": apps,
-            "incidents": [],
-            "notifications_sent": 0,
-            "events_suppressed": 0,
-        }
+    return {
+        "scenario": scenario,
+        "total_raw_events": len(events),
+        "events_generated": len(events),
+        "applications": len(demo_apps),
+        "resulting_incidents_created": len([i for i in incidents if i.last_seen and i.event_count > 0]),
+        "noise_reduction_ratio": round(1.0 - (total_notifs / max(len(events), 1)), 4),
+        "incidents": [
+            {
+                "id": i.id,
+                "title": i.title,
+                "severity": i.severity,
+                "status": i.status,
+                "event_count": i.event_count,
+                "affected_instances": len(i.affected_instances),
+                "affected_services": len(i.affected_services),
+                "affected_applications": len(i.affected_applications),
+                "spike_multiplier": i.spike_multiplier,
+                "notifications_sent": i.notifications_sent,
+                "events_suppressed": i.events_suppressed,
+                "noise_reduction_ratio": i.noise_reduction_ratio,
+            }
+            for i in incidents
+            if i.last_seen and i.event_count > 0
+        ][:5],
+        "notifications_sent": total_notifs,
+        "events_suppressed": total_suppressed,
+    }
 
 
-async def run_async_simulation(
+async def async_telemetry_worker(
     org_id: str,
     scenario: str,
     count: int,
@@ -272,30 +257,35 @@ async def run_async_simulation(
     from app.database import SessionLocal
     from app.worker.processor import process_event
     from app.core.redis_client import publish_event
-    from datetime import datetime, timezone
+    import logging
     
+    logger = logging.getLogger("telemetry.api")
     db = SessionLocal()
     try:
+        is_postgres = db.bind.name == "postgresql"
+        # 1. Ensure demo apps exist
+        from app.api.v1.demo import _ensure_demo_apps
+        demo_apps = _ensure_demo_apps(db, org_id, apps_count)
+        db.commit()
+
+        # 2. Generate events
         if scenario == "loghub-hdfs-outage":
-            from app.api.v1.demo import _ensure_demo_apps
             from app.demo.simulator import DATASET_PATH
             import json
-            
-            demo_apps = _ensure_demo_apps(db, org_id, apps_count)
-            db.commit()
+            from datetime import datetime, timezone
             
             with open(DATASET_PATH) as f:
                 dataset = json.load(f)
                 
             start_time = datetime.now(timezone.utc)
-            events_to_process = []
+            events = []
             for idx in range(count):
                 base_log = dataset[idx % len(dataset)]
                 app = demo_apps[idx % len(demo_apps)]
                 for n in range(noise_factor):
                     timestamp = start_time
                     now_str = timestamp.isoformat()
-                    events_to_process.append({
+                    events.append({
                         "event_id": new_id("evt"),
                         "organization_id": org_id,
                         "application_id": app.id,
@@ -310,23 +300,99 @@ async def run_async_simulation(
                         "received_at": now_str,
                         "metadata": dict(base_log.get("metadata", {})),
                     })
-            
-            for ev in events_to_process:
-                publish_event(ev)
-                process_event(db, ev, commit=True)
-                await asyncio.sleep(0.002)
         else:
-            from app.api.v1.demo import _ensure_demo_apps, _generate
-            demo_apps = _ensure_demo_apps(db, org_id, apps_count)
-            db.commit()
+            from app.api.v1.demo import _generate
             events = _generate(scenario, demo_apps, count)
-            
-            for ev in events:
+
+        # 3. Stream/Process events
+        batch_size = 50 if is_postgres else 1
+        for idx, ev in enumerate(events):
+            # Publish to Redis / stream
+            try:
                 publish_event(ev)
-                process_event(db, ev, commit=True)
-                await asyncio.sleep(0.002)
+            except Exception as e:
+                logger.error(f"Failed to publish event to Redis: {e}")
+
+            # Process in database
+            try:
+                process_event(db, ev, commit=False)
+                if (idx + 1) % batch_size == 0 or (idx + 1) == len(events):
+                    db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Failed to process event in database: {e}")
+
+            await asyncio.sleep(0.05)
+
     except Exception as e:
-        import logging
-        logging.getLogger("telemetry.api").error(f"Background simulation failed: {e}")
+        logger.error(f"Background simulation failed: {e}")
     finally:
         db.close()
+
+
+@router.post("/simulate")
+@router.post("/simulate/{scenario}")
+async def simulate(
+    organization_id: str,
+    background_tasks: BackgroundTasks,
+    scenario: Optional[str] = None,
+    payload: Optional[SimulationRequest] = None,
+    pattern: Optional[str] = None,
+    count: Optional[int] = Query(default=None),
+    apps: int = Query(default=3, ge=1, le=10),
+    noise_factor: int = Query(default=1, ge=1, le=10),
+    sync: Optional[bool] = Query(default=None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Run a scenario through the real pipeline."""
+    require_org_member(organization_id, user, db)
+
+    actual_pattern = (payload.pattern if payload and payload.pattern else None) or scenario or pattern or "error-burst"
+    if actual_pattern not in SCENARIOS:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown scenario '{actual_pattern}'")
+
+    actual_count = (payload.count if payload and payload.count is not None else count) or 2000
+    actual_count = max(1, min(actual_count, 20000))
+
+    is_sync = True
+    if payload is not None and payload.sync is not None:
+        is_sync = payload.sync
+    elif sync is not None:
+        is_sync = sync
+
+    if is_sync:
+        # Synchronous mode for legacy unit tests only
+        from fastapi.concurrency import run_in_threadpool
+        result = await run_in_threadpool(
+            run_sync_simulation,
+            organization_id,
+            actual_pattern,
+            actual_count,
+            apps,
+            noise_factor,
+            db,
+        )
+        return result
+
+    # Background async injection for live demo UI
+    background_tasks.add_task(
+        async_telemetry_worker,
+        organization_id,
+        actual_pattern,
+        actual_count,
+        apps,
+        noise_factor,
+    )
+    return {
+        "status": "success",
+        "message": f"Telemetry injection '{actual_pattern}' started in background",
+        "pattern": actual_pattern,
+        "timestamp": time.time(),
+        "scenario": actual_pattern,
+        "events_generated": actual_count,
+        "applications": apps,
+        "incidents": [],
+        "notifications_sent": 0,
+        "events_suppressed": 0,
+    }
