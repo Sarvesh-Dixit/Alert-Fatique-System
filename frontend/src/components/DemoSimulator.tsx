@@ -110,30 +110,30 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
         <button
           className="btn border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/60 text-amber-300 px-4 py-2.5 text-xs font-bold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(245,158,11,0.05)] disabled:opacity-50"
           disabled={!!busy}
-          onClick={() => runScenario("error-burst", 500)}
+          onClick={() => runScenario("error-burst", 30)}
         >
           <Zap className="w-4 h-4 mr-2 text-amber-400" />
-          <span>{busy === "error-burst" ? "Simulating..." : "Run Error Burst Scenario (500 events)"}</span>
+          <span>{busy === "error-burst" ? "Simulating..." : "Run Error Burst Scenario (30 events)"}</span>
         </button>
 
         {/* LogHub HDFS Outage */}
         <button
           className="btn border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 text-cyan-300 px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(0,240,255,0.05)] disabled:opacity-50"
           disabled={!!busy}
-          onClick={() => runScenario("loghub-hdfs-outage", 250)}
+          onClick={() => runScenario("loghub-hdfs-outage", 30)}
         >
           <Database className="w-4 h-4 mr-2 text-cyan-400" />
-          <span>{busy === "loghub-hdfs-outage" ? "Simulating..." : "Run LogHub HDFS Outage (250 events)"}</span>
+          <span>{busy === "loghub-hdfs-outage" ? "Simulating..." : "Run LogHub HDFS Outage (30 events)"}</span>
         </button>
 
         {/* Database Outage */}
         <button
           className="btn border border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/60 text-rose-300 px-4 py-2.5 text-xs font-semibold rounded-lg transition-all hover:scale-[1.02] cursor-pointer flex items-center shadow-[0_0_15px_rgba(244,63,94,0.05)] disabled:opacity-50"
           disabled={!!busy}
-          onClick={() => runScenario("database-outage", 300)}
+          onClick={() => runScenario("database-outage", 30)}
         >
           <Layers className="w-4 h-4 mr-2 text-rose-400" />
-          <span>{busy === "database-outage" ? "Simulating..." : "Run Database Outage (300 events)"}</span>
+          <span>{busy === "database-outage" ? "Simulating..." : "Run Database Outage (30 events)"}</span>
         </button>
       </div>
 

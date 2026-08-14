@@ -42,6 +42,14 @@ async def lifespan(_app: FastAPI):
         ensure_consumer_group()
     except Exception:  # noqa: BLE001
         log.warning("Could not ensure Redis consumer group on startup")
+
+    try:
+        import threading
+        from app.intelligence.embedding import TraceEmbeddingEngine
+        threading.Thread(target=TraceEmbeddingEngine.warmup, daemon=True).start()
+    except Exception:
+        log.warning("Could not start TraceEmbeddingEngine pre-warm thread on startup")
+
     yield
 
 
