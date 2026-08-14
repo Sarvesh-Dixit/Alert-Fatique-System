@@ -1,4 +1,4 @@
-import { Terminal, GitMerge, BellRing } from "lucide-react";
+import { Terminal, Sparkles, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 
 const steps = [
@@ -12,7 +12,7 @@ const steps = [
   },
   {
     n: "02",
-    icon: GitMerge,
+    icon: Sparkles,
     title: "GPTrace clusters the noise",
     desc:
       "Vector embeddings + cosine similarity fold thousands of near-duplicate stack traces into a single incident thread with a stable fingerprint.",
@@ -20,7 +20,7 @@ const steps = [
   },
   {
     n: "03",
-    icon: BellRing,
+    icon: Bell,
     title: "Ship one clean alert",
     desc:
       "The cooldown matrix picks the right channel, formats a summary with actions, and holds back the rest until the storm passes.",

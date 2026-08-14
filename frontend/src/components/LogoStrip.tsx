@@ -1,28 +1,28 @@
 import {
-  Boxes,
-  Cloud,
-  Container,
+  Bell,
+  Code2,
   Cpu,
-  GitBranch,
-  MessageCircle,
+  Database,
+  Globe,
+  Layers,
+  MessageSquare,
   Server,
-  Slack,
 } from "lucide-react";
 
 /**
  * Compatibility strip shown on the landing page.
- * The icons are meant to communicate ecosystem coverage without using
- * third-party trademarked logos.
+ * Icons are generic glyphs — no third-party trademarked logos are shipped.
+ * Every icon here is one already proven to exist in the installed lucide-react.
  */
 const items = [
-  { icon: Slack, label: "Slack" },
-  { icon: MessageCircle, label: "Discord" },
-  { icon: Container, label: "Docker" },
-  { icon: Boxes, label: "Kubernetes" },
-  { icon: GitBranch, label: "GitOps" },
-  { icon: Server, label: "OpenTelemetry" },
+  { icon: MessageSquare, label: "Slack" },
+  { icon: Bell, label: "Discord" },
+  { icon: Layers, label: "Docker" },
+  { icon: Server, label: "Kubernetes" },
+  { icon: Code2, label: "GitOps" },
+  { icon: Database, label: "OpenTelemetry" },
   { icon: Cpu, label: "Prometheus" },
-  { icon: Cloud, label: "Any Cloud" },
+  { icon: Globe, label: "Any Cloud" },
 ];
 
 export default function LogoStrip() {
