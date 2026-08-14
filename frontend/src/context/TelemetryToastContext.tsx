@@ -42,12 +42,14 @@ export function TelemetryToastProvider({ children }: { children: React.ReactNode
     });
 
     try {
+      // api.post returns the parsed JSON body directly (not an axios-style
+      // envelope). The backend responds with { status: "success", ... }.
       const response = await api.post<any>(
         `/organizations/${orgId}/demo/simulate?sync=false&pattern=${pattern}&count=${count}`,
         { pattern, sync: false }
       );
 
-      if (response.status === 200 || response.data?.status === "success") {
+      if (response?.status === "success") {
         setToast({
           type: "loading",
           message: "Telemetry Highway Ingestion Active",
@@ -74,7 +76,7 @@ export function TelemetryToastProvider({ children }: { children: React.ReactNode
           setToast((curr) => (curr?.type === "success" ? null : curr));
         }, 4000);
       } else {
-        throw new Error(response.data?.message || "Failed to dispatch telemetry scenario.");
+        throw new Error(response?.message || "Failed to dispatch telemetry scenario.");
       }
     } catch (error: any) {
       setToast({
