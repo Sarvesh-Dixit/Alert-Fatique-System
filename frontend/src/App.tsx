@@ -16,6 +16,7 @@ import PlatformHealth from "./pages/PlatformHealth";
 import Settings from "./pages/Settings";
 import Demo from "./pages/Demo";
 import Landing from "./pages/Landing";
+import LiveMonitor from "./pages/LiveMonitor";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/overview" element={<Protected><Navigate to="/dashboard" replace /></Protected>} />
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+      <Route path="/monitor" element={<Protected><LiveMonitor /></Protected>} />
       <Route path="/incidents" element={<Protected><Incidents /></Protected>} />
       <Route path="/incidents/:incidentId" element={<Protected><IncidentDetail /></Protected>} />
       <Route path="/applications" element={<Protected><Applications /></Protected>} />

@@ -11,6 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_org_member
+from app.config import settings
 from app.core import realtime
 from app.core.security import decode_access_token
 from app.database import get_db
@@ -363,13 +364,21 @@ async def incident_stream(
     organization_id: str,
     request: Request,
     token: str | None = Query(default=None),
-    db: Session = Depends(get_db),
 ):
     """Server-Sent Events stream of incident/notification updates for an org.
 
     EventSource cannot set headers, so the JWT is passed as ``?token=``.
+    A short-lived DB session is used only to authorize; the stream itself does
+    not hold a database connection open, which would otherwise starve the pool.
     """
-    _authorize_stream(token, organization_id, db)
+    from app.database import SessionLocal
+
+    db_auth = SessionLocal()
+    try:
+        _authorize_stream(token, organization_id, db_auth)
+    finally:
+        db_auth.close()
+
     from app.core.redis_client import get_redis
 
     channel = realtime.channel_for(organization_id)

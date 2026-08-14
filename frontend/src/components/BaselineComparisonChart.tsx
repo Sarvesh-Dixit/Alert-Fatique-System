@@ -48,9 +48,9 @@ export default function BaselineComparisonChart({
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">Baseline Comparison</h3>
           <p className="text-white/40 text-xs">Alert volume reduction: Raw vs. Rule-Based vs. AI Engine</p>
         </div>
-        <div className="flex items-center gap-2 bg-[#1c2035] border border-borderDark px-3 py-1 rounded-full shrink-0 font-mono text-xs">
-          <span className="text-white/40">NRR</span>
-          <span className="text-neonCyan font-extrabold">{noiseReductionRatio}%</span>
+        <div className="flex items-center gap-2 bg-signal/10 border border-signal/30 px-3 py-1 rounded-full shrink-0 font-mono text-xs">
+          <span className="text-white/60">NRR</span>
+          <span className="text-signalSoft font-extrabold">{noiseReductionRatio}%</span>
         </div>
       </div>
 
@@ -72,8 +72,8 @@ export default function BaselineComparisonChart({
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorAI" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#A3E635" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="#A3E635" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#252940" vertical={false} />
@@ -121,10 +121,10 @@ export default function BaselineComparisonChart({
               <Area 
                 type="monotone" 
                 dataKey="AI Semantic Vector" 
-                stroke="#10b981" 
+                stroke="#A3E635" 
                 fillOpacity={1} 
                 fill="url(#colorAI)" 
-                strokeWidth={2} 
+                strokeWidth={2.4} 
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -135,7 +135,7 @@ export default function BaselineComparisonChart({
         {[
           { name: "Raw Volume", val: eventsReceived, col: "text-neonCyan" },
           { name: "Rule-Based", val: potentialAlerts, col: "text-neonYellow" },
-          { name: "AI Semantic", val: actualNotifications, col: "text-neonGreen" },
+          { name: "AI Semantic", val: actualNotifications, col: "text-signalSoft" },
         ].map((item, idx) => (
           <div key={idx} className="flex flex-col items-center">
             <span className="text-[10px] text-white/40 uppercase tracking-wide truncate max-w-full font-mono">

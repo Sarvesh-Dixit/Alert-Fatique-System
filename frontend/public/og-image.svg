@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B0C14"/>
+      <stop offset="1" stop-color="#171926"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7C87F7" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="text" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#C9D3EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="200" cy="180" r="260" fill="url(#glow)"/>
+  <circle cx="1050" cy="500" r="300" fill="url(#glow)" opacity="0.6"/>
+  <g transform="translate(80, 210)">
+    <g transform="translate(0, 0)">
+      <rect width="60" height="60" rx="14" fill="#0B0C14" stroke="#7C87F7" stroke-opacity="0.4"/>
+      <circle cx="30" cy="30" r="6" fill="#7C87F7"/>
+      <circle cx="30" cy="30" r="12" stroke="#38BDF8" stroke-width="2" stroke-opacity="0.8"/>
+      <circle cx="30" cy="30" r="20" stroke="#7C87F7" stroke-width="1.5" stroke-opacity="0.5"/>
+    </g>
+    <text x="80" y="42" font-family="Inter, sans-serif" font-weight="700" font-size="30" fill="#C9D3EE">Telemetry Highway</text>
+  </g>
+  <text x="80" y="360" font-family="Inter, sans-serif" font-weight="800" font-size="70" fill="url(#text)">Kill the pager storm.</text>
+  <text x="80" y="440" font-family="Inter, sans-serif" font-weight="800" font-size="70" fill="url(#text)">Keep the signal.</text>
+  <text x="80" y="510" font-family="JetBrains Mono, monospace" font-weight="500" font-size="24" fill="#38BDF8">GPTrace clustering · Cooldown matrix · ~99.8% noise reduction</text>
+</svg>

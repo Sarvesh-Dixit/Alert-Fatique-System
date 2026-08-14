@@ -1,0 +1,24 @@
+{
+  "name": "Telemetry Highway",
+  "short_name": "Telemetry",
+  "description": "Intelligent Alert Fatigue Reducer for modern SRE teams.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0C14",
+  "theme_color": "#0B0C14",
+  "icons": [
+    {
+      "src": "/favicon-dark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-light.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

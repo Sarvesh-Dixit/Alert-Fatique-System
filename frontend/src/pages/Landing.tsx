@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ComparisonSection from "../components/ComparisonSection";
+import LogoStrip from "../components/LogoStrip";
+import HowItWorks from "../components/HowItWorks";
 import AuthModal from "../components/AuthModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -194,14 +196,14 @@ export default function Landing() {
             <button
               onClick={handleGuestAutoLogin}
               disabled={busy}
-              className="bg-gradient-to-r from-[#98A4F7] to-[#5B63D3] text-white font-semibold text-xs px-6 h-[46px] rounded-lg hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(124,135,247,0.15)] flex-1"
+              className="bg-signal hover:bg-signalSoft text-ink font-bold text-xs px-6 h-[46px] rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-signal flex-1"
             >
               <Play className="w-4 h-4" />
               <span>{busy ? "Loading guest session..." : "Launch Interactive Simulator"}</span>
             </button>
             <button
               onClick={() => setAuthOpen(true)}
-              className="border border-[#727DA1]/30 bg-[#171926]/40 hover:bg-[#727DA1]/10 text-white font-semibold text-xs px-6 h-[46px] rounded-lg transition flex items-center justify-center gap-2 cursor-pointer flex-1"
+              className="border border-white/15 bg-panel/40 hover:bg-white/5 hover:border-signal/40 text-white font-semibold text-xs px-6 h-[46px] rounded-lg transition flex items-center justify-center gap-2 cursor-pointer flex-1"
             >
               <span>Access Evaluator Portal / Sign In</span>
             </button>
@@ -211,9 +213,9 @@ export default function Landing() {
           <button 
             onClick={handleGuestAutoLogin}
             disabled={busy}
-            className="group flex items-center gap-1.5 bg-[#171926]/60 border border-[#727DA1]/15 px-3 py-1 rounded-full text-[10px] font-mono text-neonCyan hover:border-[#38BDF8]/40 hover:bg-[#23273b] transition cursor-pointer"
+            className="group flex items-center gap-1.5 bg-panel/60 border border-signal/25 px-3 py-1 rounded-full text-[10px] font-mono text-signalSoft hover:border-signal/60 hover:bg-signal/10 transition cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+            <Zap className="w-3.5 h-3.5 text-signal" />
             <span>Auto-login pre-seeded guest organization for instant testing</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -236,8 +238,8 @@ export default function Landing() {
                   onClick={() => setActiveTab(idx)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                     activeTab === idx 
-                      ? "bg-[#23273b] text-neonCyan border border-[#38BDF8]/20" 
-                      : "text-white/50 hover:bg-[#727DA1]/10 hover:text-white"
+                      ? "bg-signal/10 text-signalSoft border border-signal/40" 
+                      : "text-white/50 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <IconComp className="w-4 h-4" />
@@ -273,6 +275,12 @@ export default function Landing() {
           </div>
         </motion.div>
       </section>
+
+      {/* Ecosystem compatibility strip */}
+      <LogoStrip />
+
+      {/* How it works — three steps from noise to signal */}
+      <HowItWorks />
 
       {/* Comparative ROI & Suppression section */}
       <div id="cooldown">
@@ -382,7 +390,7 @@ export default function Landing() {
         </p>
         <button
           onClick={handleGuestAutoLogin}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs px-6 py-3 rounded-lg hover:opacity-95 transition cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.25)] mt-2"
+          className="bg-signal hover:bg-signalSoft text-ink font-bold text-xs px-6 py-3 rounded-lg transition cursor-pointer shadow-signal mt-2"
         >
           {busy ? "Loading guest session..." : "1-Click Sign In & Access Simulator"}
         </button>

@@ -242,19 +242,19 @@ export default function Dashboard() {
                     <span className="text-[10px] text-white/30 font-mono tracking-tight">Dispatched webhooks</span>
                   </div>
 
-                  {/* Card 4: Noise Reduction Ratio */}
-                  <div className="card border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-blue-500/5 to-transparent text-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.05)] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200 relative overflow-hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Noise Reduction</span>
-                    <span className="text-3xl font-semibold font-mono tracking-tight">
+                  {/* Card 4: Noise Reduction Ratio — signature hero */}
+                  <div className="panel-hero p-5 flex flex-col justify-between h-[120px] relative overflow-hidden">
+                    <div
+                      className="absolute -top-16 -right-16 w-[140px] h-[140px] rounded-full pointer-events-none"
+                      style={{ background: "radial-gradient(closest-side, rgba(163,230,53,0.28), transparent 70%)" }}
+                    />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-signalSoft relative z-10">Noise Reduction</span>
+                    <span className="text-3xl font-black font-mono tracking-tight text-white relative z-10">
                       {kpis ? `${kpis.noise_reduction_ratio}%` : "0%"}
                     </span>
-                    {/* Live Status indicator pill */}
-                    <div className="flex items-center gap-1.5 mt-0.5 bg-[#0B0C14]/50 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
-                      <span className="relative flex h-1.5 w-1.5 shrink-0">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                      </span>
-                      <span className="text-[8px] font-bold font-mono tracking-widest text-emerald-400 uppercase">ACTIVE FILTERING ENGINE</span>
+                    <div className="flex items-center gap-1.5 mt-0.5 bg-ink/60 border border-signal/40 px-2 py-0.5 rounded-full w-fit relative z-10">
+                      <span className="live-dot" />
+                      <span className="text-[8px] font-bold font-mono tracking-widest text-signalSoft uppercase">Active filtering engine</span>
                     </div>
                   </div>
                 </>
@@ -281,7 +281,7 @@ export default function Dashboard() {
                       <span>Raw Vol</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-0.5 bg-[#10b981]" />
+                      <span className="w-2.5 h-0.5 bg-signal" />
                       <span>Suppressed</span>
                     </div>
                   </div>
@@ -296,8 +296,8 @@ export default function Dashboard() {
                         <XAxis dataKey="time" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
                         <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
                         <Tooltip contentStyle={{ backgroundColor: '#141724', borderColor: '#252940', borderRadius: '8px', color: '#f8fafc', fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-                        <Line type="stepAfter" dataKey="Raw Volume" stroke="#00f0ff" strokeWidth={2} dot={false} name="Raw" />
-                        <Line type="stepAfter" dataKey="Suppressed" stroke="#10b981" strokeWidth={2} dot={false} name="Suppressed" />
+                        <Line type="stepAfter" dataKey="Raw Volume" stroke="#38BDF8" strokeWidth={2} dot={false} name="Raw" />
+                        <Line type="stepAfter" dataKey="Suppressed" stroke="#A3E635" strokeWidth={2.4} dot={false} name="Suppressed" />
                       </LineChart>
                     </ResponsiveContainer>
                   )}
@@ -317,7 +317,7 @@ export default function Dashboard() {
           <h2 className="text-xs font-bold text-white/70 uppercase tracking-wider flex items-center gap-2">
             <span>{cat2Open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}</span>
             <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-cyan-400" />
+              <Clock className="w-4 h-4 text-signal" />
               <span>Automated Cooldown Matrix & Active Suppression</span>
             </span>
           </h2>
@@ -352,7 +352,7 @@ export default function Dashboard() {
           <h2 className="text-xs font-bold text-white/70 uppercase tracking-wider flex items-center gap-2">
             <span>{cat3Open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}</span>
             <span className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-indigo-400" />
+              <Activity className="w-4 h-4 text-signal" />
               <span>AI Semantic Clustering & Baseline Comparison</span>
             </span>
           </h2>
@@ -415,7 +415,7 @@ export default function Dashboard() {
                   <div className="font-semibold text-white text-sm">Active Incidents</div>
                   <p className="text-white/40 text-[11px]">Currently open operational alerts requiring action</p>
                 </div>
-                <Link to="/incidents" className="text-cyan-400 text-xs hover:underline flex items-center gap-1 font-semibold">
+                <Link to="/incidents" className="text-signal hover:text-signalSoft text-xs hover:underline flex items-center gap-1 font-semibold">
                   <span>View all incidents</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -439,7 +439,7 @@ export default function Dashboard() {
                         <tr key={i.id} className="border-b border-[#252940]/40 hover:bg-white/[0.01] transition-all">
                           <td className="py-2.5"><SeverityBadge severity={i.severity} /></td>
                           <td className="py-2.5 font-medium text-white/90">
-                            <Link to={`/incidents/${i.id}`} className="hover:text-cyan-400 transition">{i.title}</Link>
+                            <Link to={`/incidents/${i.id}`} className="hover:text-signal transition">{i.title}</Link>
                           </td>
                           <td className="text-white/70 py-2.5 text-right font-mono tracking-tight">{i.event_count}</td>
                           <td className="py-2.5 text-center"><StatusBadge status={i.status} /></td>
