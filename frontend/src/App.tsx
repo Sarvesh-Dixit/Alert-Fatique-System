@@ -45,7 +45,8 @@ export default function App() {
       <Route path="/integrations" element={<Protected><Integrations /></Protected>} />
       <Route path="/platform-health" element={<Protected><PlatformHealth /></Protected>} />
       <Route path="/demo" element={<Protected><Demo /></Protected>} />
-      <Route path="/settings" element={<Protected><Settings /></Protected>} />
+      <Route path="/rules" element={<Protected><Settings /></Protected>} />
+      <Route path="/settings" element={<Protected><Navigate to="/rules" replace /></Protected>} />
       <Route path="*" element={<Navigate to="/overview" replace />} />
     </Routes>
   );
