@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
@@ -16,7 +16,7 @@ import { SeverityBadge, StatusBadge, fmtTime } from "../ui";
 import CooldownMatrix from "../components/CooldownMatrix";
 import BaselineComparisonChart from "../components/BaselineComparisonChart";
 import DemoSimulator from "../components/DemoSimulator";
-import { Clock, Activity, ShieldAlert, Zap, ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
+import { Clock, Activity, ShieldAlert, Zap, ChevronDown, ChevronRight, ArrowRight, X } from "lucide-react";
 
 export default function Dashboard() {
   const { currentOrg } = useAuth();
@@ -25,29 +25,75 @@ export default function Dashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 
+  // Loading States & Toasts
+  const [loadingKPIs, setLoadingKPIs] = useState(true);
+  const [loadingCooldown, setLoadingCooldown] = useState(true);
+  const [loadingIncidents, setLoadingIncidents] = useState(true);
+  const [hasNotifiedReady, setHasNotifiedReady] = useState(false);
+  const [toast, setToast] = useState<{ message: string; sub: string } | null>(null);
+
   // Category Collapsibility State
   const [cat1Open, setCat1Open] = useState(true);
   const [cat2Open, setCat2Open] = useState(true);
   const [cat3Open, setCat3Open] = useState(true);
   const [incidentsOpen, setIncidentsOpen] = useState(true);
 
+  const fetchPromiseRef = useRef<Promise<any> | null>(null);
+
   const load = useCallback(async () => {
     if (!currentOrg) return;
-    const [k, cds, inc] = await Promise.all([
+    if (fetchPromiseRef.current) {
+      return fetchPromiseRef.current;
+    }
+
+    const promise = Promise.all([
       api.get<NoiseReductionKPIs>(`/organizations/${currentOrg.id}/kpis`),
       api.get<CooldownState[]>(`/organizations/${currentOrg.id}/cooldown-matrix`),
       api.get<Incident[]>(`/organizations/${currentOrg.id}/incidents?status=OPEN&limit=8`),
     ]);
-    setKpis(k);
-    setCooldowns(cds);
-    setIncidents(inc);
+
+    fetchPromiseRef.current = promise;
+
+    try {
+      const [k, cds, inc] = await promise;
+      setKpis(k);
+      setCooldowns(cds);
+      setIncidents(inc);
+      setLoadingKPIs(false);
+      setLoadingCooldown(false);
+      setLoadingIncidents(false);
+    } catch (err) {
+      console.error("Dashboard fetch failed", err);
+    } finally {
+      fetchPromiseRef.current = null;
+    }
   }, [currentOrg]);
 
+  // Load immediately on organization switch, resetting states
   useEffect(() => {
+    setLoadingKPIs(true);
+    setLoadingCooldown(true);
+    setLoadingIncidents(true);
+    setHasNotifiedReady(false);
     load();
-  }, [load]);
+  }, [currentOrg, load]);
 
-  // Connect to real-time SSE updates
+  // Coordinated Ready notification
+  const isFullyLoaded = !loadingKPIs && !loadingCooldown && !loadingIncidents;
+  useEffect(() => {
+    if (isFullyLoaded && !hasNotifiedReady && currentOrg) {
+      setHasNotifiedReady(true);
+      setToast({
+        message: "Telemetry System Ready",
+        sub: "Automated Cooldown Matrix, Baseline KPIs, and Active Incidents synchronized.",
+      });
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFullyLoaded, hasNotifiedReady, currentOrg]);
+
   // Connect to real-time SSE updates
   useIncidentStream(currentOrg?.id, load, {
     isSimulationRunning,
@@ -106,7 +152,24 @@ export default function Dashboard() {
   const spikeData = generateSpikeChartData();
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <div className="flex flex-col gap-6 font-sans relative">
+      {/* Telemetry System Ready Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 p-4 bg-emerald-950/90 border border-emerald-500/40 rounded-xl shadow-2xl max-w-sm animate-slide-in text-emerald-200">
+          <div className="shrink-0 text-lg">🚀</div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-100">{toast.message}</h4>
+            <p className="text-[11px] text-emerald-300/80 leading-relaxed mt-0.5">{toast.sub}</p>
+          </div>
+          <button 
+            onClick={() => setToast(null)} 
+            className="text-emerald-400 hover:text-emerald-200 transition shrink-0 self-start cursor-pointer bg-transparent border-none"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Telemetry Simulator Quick-Controls Banner */}
       <DemoSimulator onScenarioTriggered={load} onSimulationStateChange={setIsSimulationRunning} />
 
@@ -129,85 +192,120 @@ export default function Dashboard() {
           <div className="flex flex-col gap-6">
             {/* Stat Cards Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Card 1: Raw Events */}
-              <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
-                <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Raw Events Ingested</span>
-                <span className="text-3xl font-semibold font-mono tracking-tight text-white mt-1">
-                  {kpis ? formatMetric(kpis.events_received) : "0"}
-                </span>
-                <span className="text-[10px] text-white/30 font-mono tracking-tight">Total ingress logs</span>
-              </div>
+              {loadingKPIs ? (
+                <>
+                  <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[120px] p-5 flex flex-col justify-between">
+                    <div className="h-2 bg-[#727DA1]/30 rounded w-2/3"></div>
+                    <div className="h-6 bg-[#727DA1]/20 rounded w-1/2"></div>
+                    <div className="h-1.5 bg-[#727DA1]/10 rounded w-3/4"></div>
+                  </div>
+                  <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[120px] p-5 flex flex-col justify-between">
+                    <div className="h-2 bg-[#727DA1]/30 rounded w-2/3"></div>
+                    <div className="h-6 bg-[#727DA1]/20 rounded w-1/2"></div>
+                    <div className="h-1.5 bg-[#727DA1]/10 rounded w-3/4"></div>
+                  </div>
+                  <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[120px] p-5 flex flex-col justify-between">
+                    <div className="h-2 bg-[#727DA1]/30 rounded w-2/3"></div>
+                    <div className="h-6 bg-[#727DA1]/20 rounded w-1/2"></div>
+                    <div className="h-1.5 bg-[#727DA1]/10 rounded w-3/4"></div>
+                  </div>
+                  <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[120px] p-5 flex flex-col justify-between">
+                    <div className="h-2 bg-[#727DA1]/30 rounded w-2/3"></div>
+                    <div className="h-6 bg-[#727DA1]/20 rounded w-1/2"></div>
+                    <div className="h-1.5 bg-[#727DA1]/10 rounded w-3/4"></div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Card 1: Raw Events */}
+                  <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Raw Events Ingested</span>
+                    <span className="text-3xl font-semibold font-mono tracking-tight text-white mt-1">
+                      {kpis ? formatMetric(kpis.events_received) : "0"}
+                    </span>
+                    <span className="text-[10px] text-white/30 font-mono tracking-tight">Total ingress logs</span>
+                  </div>
 
-              {/* Card 2: Actionable Incidents */}
-              <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
-                <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Actionable Incidents</span>
-                <span className="text-3xl font-semibold font-mono tracking-tight text-rose-400 mt-1">
-                  {kpis ? formatMetric(kpis.active_incidents) : "0"}
-                </span>
-                <span className="text-[10px] text-white/30 font-mono tracking-tight">Open issues thread</span>
-              </div>
+                  {/* Card 2: Actionable Incidents */}
+                  <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Actionable Incidents</span>
+                    <span className="text-3xl font-semibold font-mono tracking-tight text-rose-400 mt-1">
+                      {kpis ? formatMetric(kpis.active_incidents) : "0"}
+                    </span>
+                    <span className="text-[10px] text-white/30 font-mono tracking-tight">Open issues thread</span>
+                  </div>
 
-              {/* Card 3: Outbound Alerts */}
-              <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
-                <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Outbound Alerts</span>
-                <span className="text-3xl font-semibold font-mono tracking-tight text-amber-400 mt-1">
-                  {kpis ? formatMetric(kpis.notifications_sent) : "0"}
-                </span>
-                <span className="text-[10px] text-white/30 font-mono tracking-tight">Dispatched webhooks</span>
-              </div>
+                  {/* Card 3: Outbound Alerts */}
+                  <div className="card border border-[#252940] bg-[#161928] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200">
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Outbound Alerts</span>
+                    <span className="text-3xl font-semibold font-mono tracking-tight text-amber-400 mt-1">
+                      {kpis ? formatMetric(kpis.notifications_sent) : "0"}
+                    </span>
+                    <span className="text-[10px] text-white/30 font-mono tracking-tight">Dispatched webhooks</span>
+                  </div>
 
-              {/* Card 4: Noise Reduction Ratio */}
-              <div className="card border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-blue-500/5 to-transparent text-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.05)] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200 relative overflow-hidden">
-                <span className="text-[10px] font-bold uppercase tracking-wider">Noise Reduction</span>
-                <span className="text-3xl font-semibold font-mono tracking-tight">
-                  {kpis ? `${kpis.noise_reduction_ratio}%` : "0%"}
-                </span>
-                {/* Live Status indicator pill */}
-                <div className="flex items-center gap-1.5 mt-0.5 bg-[#0B0C14]/50 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
-                  <span className="relative flex h-1.5 w-1.5 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-[8px] font-bold font-mono tracking-widest text-emerald-400 uppercase">ACTIVE FILTERING ENGINE</span>
-                </div>
-              </div>
+                  {/* Card 4: Noise Reduction Ratio */}
+                  <div className="card border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-blue-500/5 to-transparent text-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.05)] p-5 flex flex-col justify-between h-[120px] hover:scale-[1.01] transition-transform duration-200 relative overflow-hidden">
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Noise Reduction</span>
+                    <span className="text-3xl font-semibold font-mono tracking-tight">
+                      {kpis ? `${kpis.noise_reduction_ratio}%` : "0%"}
+                    </span>
+                    {/* Live Status indicator pill */}
+                    <div className="flex items-center gap-1.5 mt-0.5 bg-[#0B0C14]/50 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
+                      <span className="relative flex h-1.5 w-1.5 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      </span>
+                      <span className="text-[8px] font-bold font-mono tracking-widest text-emerald-400 uppercase">ACTIVE FILTERING ENGINE</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Spike Chart Panel */}
-            <div className="card bg-[#161928] border border-[#252940] p-5 flex flex-col justify-between h-[240px]">
-              <div className="flex justify-between items-center mb-3">
-                <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">Signal vs Noise Spike Chart</h3>
-                  <p className="text-[10px] text-white/40">Alert rate spikes collapsing under automated cooldown suppression</p>
+            {loadingKPIs ? (
+              <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[240px] p-5">
+                <div className="h-3 bg-[#727DA1]/30 rounded w-1/4 mb-3"></div>
+                <div className="h-2 bg-[#727DA1]/10 rounded w-1/3 mb-6"></div>
+                <div className="h-24 bg-[#727DA1]/5 rounded w-full"></div>
+              </div>
+            ) : (
+              <div className="card bg-[#161928] border border-[#252940] p-5 flex flex-col justify-between h-[240px]">
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">Signal vs Noise Spike Chart</h3>
+                    <p className="text-[10px] text-white/40">Alert rate spikes collapsing under automated cooldown suppression</p>
+                  </div>
+                  <div className="flex items-center gap-4 text-[10px] font-mono text-white/50">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-0.5 bg-[#00f0ff]" />
+                      <span>Raw Vol</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-0.5 bg-[#10b981]" />
+                      <span>Suppressed</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 text-[10px] font-mono text-white/50">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-0.5 bg-[#00f0ff]" />
-                    <span>Raw Vol</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-0.5 bg-[#10b981]" />
-                    <span>Suppressed</span>
-                  </div>
+                <div className="flex-1 min-h-0">
+                  {spikeData.length === 0 ? (
+                    <div className="text-xs text-white/30 italic text-center py-16">Waiting for telemetry...</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={spikeData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="2 2" stroke="#252940" vertical={false} />
+                        <XAxis dataKey="time" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
+                        <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#141724', borderColor: '#252940', borderRadius: '8px', color: '#f8fafc', fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
+                        <Line type="stepAfter" dataKey="Raw Volume" stroke="#00f0ff" strokeWidth={2} dot={false} name="Raw" />
+                        <Line type="stepAfter" dataKey="Suppressed" stroke="#10b981" strokeWidth={2} dot={false} name="Suppressed" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
-              <div className="flex-1 min-h-0">
-                {spikeData.length === 0 ? (
-                  <div className="text-xs text-white/30 italic text-center py-16">Waiting for telemetry...</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={spikeData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="2 2" stroke="#252940" vertical={false} />
-                      <XAxis dataKey="time" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
-                      <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={{ stroke: '#252940' }} />
-                      <Tooltip contentStyle={{ backgroundColor: '#141724', borderColor: '#252940', borderRadius: '8px', color: '#f8fafc', fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-                      <Line type="stepAfter" dataKey="Raw Volume" stroke="#00f0ff" strokeWidth={2} dot={false} name="Raw" />
-                      <Line type="stepAfter" dataKey="Suppressed" stroke="#10b981" strokeWidth={2} dot={false} name="Suppressed" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>
@@ -226,12 +324,24 @@ export default function Dashboard() {
             </span>
           </h2>
           <span className="text-[10px] bg-[#727DA1]/15 text-white/40 group-hover:text-white px-2 py-0.5 rounded-full font-mono font-semibold">
-            4 severity tiers
+            {loadingCooldown ? "..." : `${cooldowns.length} active`}
           </span>
         </div>
 
         {cat2Open && (
-          <CooldownMatrix cooldowns={cooldowns} />
+          loadingCooldown ? (
+            <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[180px] p-6">
+              <div className="h-3 bg-[#727DA1]/30 rounded w-1/4 mb-4"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="h-24 bg-[#0B0C14]/50 border border-[#252940] rounded-xl"></div>
+                <div className="h-24 bg-[#0B0C14]/50 border border-[#252940] rounded-xl"></div>
+                <div className="h-24 bg-[#0B0C14]/50 border border-[#252940] rounded-xl"></div>
+                <div className="h-24 bg-[#0B0C14]/50 border border-[#252940] rounded-xl"></div>
+              </div>
+            </div>
+          ) : (
+            <CooldownMatrix cooldowns={cooldowns} />
+          )
         )}
       </div>
 
@@ -254,14 +364,21 @@ export default function Dashboard() {
         </div>
 
         {cat3Open && (
-          <div className="grid grid-cols-1 gap-6">
-            <BaselineComparisonChart
-              eventsReceived={kpis?.events_received ?? 0}
-              potentialAlerts={kpis?.naive_notifications ?? 0}
-              actualNotifications={kpis?.notifications_sent ?? 0}
-              noiseReductionRatio={kpis?.noise_reduction_ratio ?? 0}
-            />
-          </div>
+          loadingKPIs ? (
+            <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl h-[200px] p-6">
+              <div className="h-3 bg-[#727DA1]/30 rounded w-1/3 mb-4"></div>
+              <div className="h-24 bg-[#727DA1]/5 rounded w-full"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              <BaselineComparisonChart
+                eventsReceived={kpis?.events_received ?? 0}
+                potentialAlerts={kpis?.naive_notifications ?? 0}
+                actualNotifications={kpis?.notifications_sent ?? 0}
+                noiseReductionRatio={kpis?.noise_reduction_ratio ?? 0}
+              />
+            </div>
+          )
         )}
       </div>
 
@@ -279,53 +396,64 @@ export default function Dashboard() {
             </span>
           </h2>
           <span className="text-[10px] bg-[#727DA1]/15 text-white/40 group-hover:text-white px-2 py-0.5 rounded-full font-mono font-semibold">
-            {incidents.length} open issues
+            {loadingIncidents ? "..." : `${incidents.length} open issues`}
           </span>
         </div>
 
         {incidentsOpen && (
-          <div className="card bg-[#161928] border border-[#252940]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="font-semibold text-white text-sm">Active Incidents</div>
-                <p className="text-white/40 text-[11px]">Currently open operational alerts requiring action</p>
+          loadingIncidents ? (
+            <div className="animate-pulse bg-[#161928] border border-[#252940] rounded-xl p-6 h-[200px] flex flex-col justify-between">
+              <div className="h-3 bg-[#727DA1]/30 rounded w-1/3 mb-4"></div>
+              <div className="space-y-3 flex-grow">
+                <div className="h-6 bg-[#727DA1]/10 rounded w-full"></div>
+                <div className="h-6 bg-[#727DA1]/10 rounded w-full"></div>
+                <div className="h-6 bg-[#727DA1]/10 rounded w-full"></div>
               </div>
-              <Link to="/incidents" className="text-cyan-400 text-xs hover:underline flex items-center gap-1 font-semibold">
-                <span>View all incidents</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
             </div>
-            {incidents.length === 0 ? (
-              <div className="text-white/40 text-xs py-8 text-center italic">No active incidents — all clear.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="text-white/40 border-b border-[#252940]/60 text-[10px] uppercase tracking-wider font-mono">
-                      <th className="pb-2">Severity</th>
-                      <th className="pb-2">Title</th>
-                      <th className="pb-2 text-right">Event Count</th>
-                      <th className="pb-2 text-center">Status</th>
-                      <th className="pb-2 text-right">Last Seen</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {incidents.map((i) => (
-                      <tr key={i.id} className="border-b border-[#252940]/40 hover:bg-white/[0.01] transition-all">
-                        <td className="py-2.5"><SeverityBadge severity={i.severity} /></td>
-                        <td className="py-2.5 font-medium text-white/90">
-                          <Link to={`/incidents/${i.id}`} className="hover:text-cyan-400 transition">{i.title}</Link>
-                        </td>
-                        <td className="text-white/70 py-2.5 text-right font-mono tracking-tight">{i.event_count}</td>
-                        <td className="py-2.5 text-center"><StatusBadge status={i.status} /></td>
-                        <td className="text-white/40 py-2.5 text-right whitespace-nowrap font-mono tracking-tight">{fmtTime(i.last_seen)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          ) : (
+            <div className="card bg-[#161928] border border-[#252940]">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="font-semibold text-white text-sm">Active Incidents</div>
+                  <p className="text-white/40 text-[11px]">Currently open operational alerts requiring action</p>
+                </div>
+                <Link to="/incidents" className="text-cyan-400 text-xs hover:underline flex items-center gap-1 font-semibold">
+                  <span>View all incidents</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-            )}
-          </div>
+              {incidents.length === 0 ? (
+                <div className="text-white/40 text-xs py-8 text-center italic">No active incidents — all clear.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead>
+                      <tr className="text-white/40 border-b border-[#252940]/60 text-[10px] uppercase tracking-wider font-mono">
+                        <th className="pb-2">Severity</th>
+                        <th className="pb-2">Title</th>
+                        <th className="pb-2 text-right">Event Count</th>
+                        <th className="pb-2 text-center">Status</th>
+                        <th className="pb-2 text-right">Last Seen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {incidents.map((i) => (
+                        <tr key={i.id} className="border-b border-[#252940]/40 hover:bg-white/[0.01] transition-all">
+                          <td className="py-2.5"><SeverityBadge severity={i.severity} /></td>
+                          <td className="py-2.5 font-medium text-white/90">
+                            <Link to={`/incidents/${i.id}`} className="hover:text-cyan-400 transition">{i.title}</Link>
+                          </td>
+                          <td className="text-white/70 py-2.5 text-right font-mono tracking-tight">{i.event_count}</td>
+                          <td className="py-2.5 text-center"><StatusBadge status={i.status} /></td>
+                          <td className="text-white/40 py-2.5 text-right whitespace-nowrap font-mono tracking-tight">{fmtTime(i.last_seen)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )
         )}
       </div>
     </div>
