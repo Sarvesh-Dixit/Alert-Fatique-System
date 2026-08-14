@@ -144,6 +144,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <NavLink to="/dashboard" className={activeSubClass}>
                   Overview Dashboard
                 </NavLink>
+                <NavLink to="/monitor" className={activeSubClass}>
+                  Live Monitor
+                </NavLink>
               </div>
             )}
           </div>
