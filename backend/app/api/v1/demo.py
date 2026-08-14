@@ -183,7 +183,7 @@ from typing import Optional
 
 class SimulationRequest(BaseModel):
     pattern: str = "error-burst"
-    count: Optional[int] = 20
+    count: Optional[int] = 30
     sync: Optional[bool] = False
 
 
@@ -307,6 +307,15 @@ async def async_telemetry_worker(
         # 3. Stream/Process events
         batch_size = 50 if is_postgres else 1
         for idx, ev in enumerate(events):
+            # Pre-compute trace embedding in worker thread and store on event dict
+            from fastapi.concurrency import run_in_threadpool
+            from app.intelligence.embedding import TraceEmbeddingEngine
+            try:
+                embedding = await run_in_threadpool(TraceEmbeddingEngine.embed_event, ev)
+                ev["_trace_embedding"] = embedding
+            except Exception as e:
+                logger.error(f"Failed to compute embedding in threadpool: {e}")
+
             # Publish to Redis / stream
             try:
                 publish_event(ev)
@@ -352,14 +361,17 @@ async def simulate(
     if actual_pattern not in SCENARIOS:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown scenario '{actual_pattern}'")
 
-    actual_count = (payload.count if payload and payload.count is not None else count) or 2000
-    actual_count = max(1, min(actual_count, 20000))
-
     is_sync = True
     if payload is not None and payload.sync is not None:
         is_sync = payload.sync
     elif sync is not None:
         is_sync = sync
+
+    actual_count = (payload.count if payload and payload.count is not None else count) or 30
+    if not is_sync:
+        actual_count = max(1, min(actual_count, 50))
+    else:
+        actual_count = max(1, min(actual_count, 20000))
 
     if is_sync:
         # Synchronous mode for legacy unit tests only

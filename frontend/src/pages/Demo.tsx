@@ -51,7 +51,7 @@ interface ToastState {
 export default function Demo() {
   const { currentOrg } = useAuth();
   const [scenarios, setScenarios] = useState<DemoScenario[]>([]);
-  const [count, setCount] = useState(1000);
+  const [count, setCount] = useState(30);
   const [busy, setBusy] = useState("");
   const [result, setResult] = useState<SimResult | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -181,8 +181,8 @@ export default function Demo() {
                 type="number"
                 className="input pl-3 pr-12 bg-[#0B0C14] border border-[#252940] focus:border-cyan-400 font-mono tracking-tight text-white/95"
                 value={count}
-                min={100}
-                max={20000}
+                min={10}
+                max={50}
                 onChange={(e) => setCount(Number(e.target.value))}
               />
               <span className="absolute right-3 top-2.5 font-mono text-[10px] text-white/30 uppercase">logs</span>
@@ -194,7 +194,7 @@ export default function Demo() {
               • Traffic will be distributed across <strong className="text-white">3 simulated microservices</strong>.
             </div>
             <div>
-              • Recommended scale: <strong className="text-white">500 to 2,000 logs</strong> to verify cooldown suppressions.
+              • Recommended scale: <strong className="text-white">30 to 50 logs</strong> to verify cooldown suppressions without CPU overhead.
             </div>
           </div>
         </div>
