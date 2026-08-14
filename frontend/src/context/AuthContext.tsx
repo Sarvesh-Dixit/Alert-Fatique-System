@@ -18,6 +18,7 @@ interface AuthState {
   setCurrentOrg: (o: Organization) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  guestLogin: (options?: { signal?: AbortSignal }) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
 }
@@ -70,6 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refresh();
   }
 
+  async function guestLogin(options?: { signal?: AbortSignal }) {
+    const res = await api.post<{ access_token: string }>("/auth/guest", null, options);
+    setToken(res.access_token);
+    await refresh();
+  }
+
   function logout() {
     clearToken();
     setUser(null);
@@ -79,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthCtx.Provider
-      value={{ user, organizations, currentOrg, loading, setCurrentOrg, login, register, logout, refresh }}
+      value={{ user, organizations, currentOrg, loading, setCurrentOrg, login, register, guestLogin, logout, refresh }}
     >
       {children}
     </AuthCtx.Provider>
