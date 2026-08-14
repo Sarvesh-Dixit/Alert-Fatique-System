@@ -213,6 +213,60 @@ export default function LiveMonitor() {
 
   const handleInject = async (scenario: string) => {
     if (!currentOrg) return;
+    
+    // Optimistic UI updates
+    const targetService = scenario === "error-burst" ? "payment-api" : scenario === "cpu-spike" ? "host-agent" : "orders";
+    const targetSeverity = scenario === "cpu-spike" ? "HIGH" : "CRITICAL";
+    
+    const optimisticCooldown: CooldownState = {
+      incident_id: `opt-cd-${Date.now()}`,
+      service: targetService,
+      application_name: "Demo Service 1",
+      severity: targetSeverity,
+      title: scenario === "error-burst" 
+        ? "Burst of identical errors in payment-api" 
+        : scenario === "cpu-spike" 
+          ? "System CPU utilization critical" 
+          : "Database connection failures",
+      expiry_time: new Date(Date.now() + 60 * 1000).toISOString(),
+      remaining_seconds: 60,
+      suppressed_count: 29,
+      status: "ACTIVE_SUPPRESSION",
+      trigger_time: new Date().toISOString(),
+    };
+    
+    const optimisticIncident: Incident = {
+      id: `opt-inc-${Date.now()}`,
+      organization_id: currentOrg.id,
+      application_id: "opt-app",
+      fingerprint: `opt-fp-${Date.now()}`,
+      title: scenario === "error-burst" 
+        ? "Optimistic: payment-api Rejected Gateway Charge" 
+        : scenario === "cpu-spike" 
+          ? "Optimistic: host-agent High CPU Load Spike" 
+          : "Optimistic: orders Database Connection Failures",
+      service: targetService,
+      severity: targetSeverity,
+      status: "OPEN",
+      first_seen: new Date().toISOString(),
+      last_seen: new Date().toISOString(),
+      event_count: 30,
+      affected_instances: ["srv-1"],
+      affected_regions: ["india"],
+      affected_services: [targetService],
+      affected_applications: ["Demo Service 1"],
+      baseline_rate: 1.0,
+      current_rate: 10.0,
+      spike_multiplier: 10,
+      events_suppressed: 29,
+      notifications_sent: 1,
+      noise_reduction_ratio: 96.6,
+      correlation_id: null,
+    };
+    
+    setCooldowns((prev) => [optimisticCooldown, ...prev]);
+    setIncidents((prev) => [optimisticIncident, ...prev]);
+
     await triggerTelemetryInjection(currentOrg.id, scenario, 30, load);
   };
 
@@ -358,7 +412,7 @@ export default function LiveMonitor() {
       </div>
 
       {/* Core Visual Anchor 1: Executive Noise Reduction Ratio Panel */}
-      <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} />
+      <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} range={range} setRange={setRange} />
 
       {/* Core Visual Anchor 2: Automated Cooldown Matrix */}
       <CooldownMatrix cooldowns={cooldowns} />
