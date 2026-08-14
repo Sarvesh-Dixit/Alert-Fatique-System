@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import re
+import logging
+from sqlalchemy.exc import IntegrityError
+from fastapi.concurrency import run_in_threadpool
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
@@ -93,6 +96,72 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
         ip_address=request.client.host if request.client else None,
     )
     return TokenResponse(access_token=create_access_token(user.id))
+
+
+logger = logging.getLogger("telemetry.auth")
+
+
+@router.post("/guest", response_model=TokenResponse)
+async def guest_login(request: Request, db: Session = Depends(get_db)):
+    logger.info("Guest login attempt...")
+
+    def _get_or_create_guest():
+        email = "evaluator@telemetryhighway.com"
+        # Try to resolve guest user first
+        user = db.scalar(select(User).where(User.email == email))
+        if user:
+            logger.info("Resolved existing guest evaluator user")
+            return TokenResponse(access_token=create_access_token(user.id))
+
+        # Create guest user, org, and seed data
+        try:
+            user = User(
+                email=email,
+                full_name="Guest Evaluator",
+                hashed_password=hash_password("evaluatorpass"),
+            )
+            org = Organization(name="Evaluator Organization", slug=_slugify("Evaluator Organization"))
+            db.add_all([user, org])
+            db.flush()
+
+            db.add(OrganizationMember(organization_id=org.id, user_id=user.id, role="owner"))
+            db.add(
+                RetentionPolicy(
+                    organization_id=org.id,
+                    raw_telemetry_days=settings.retention_raw_telemetry_days,
+                    incident_days=settings.retention_incident_days,
+                    audit_days=settings.retention_audit_days,
+                )
+            )
+            record_audit(
+                db,
+                action="user.register",
+                organization_id=org.id,
+                user_id=user.id,
+                ip_address=request.client.host if request.client else None,
+                commit=False,
+            )
+            db.commit()
+            logger.info("Guest evaluator user and organization created successfully")
+        except IntegrityError:
+            db.rollback()
+            # If a concurrent request inserted the user, query again
+            user = db.scalar(select(User).where(User.email == email))
+            if not user:
+                logger.error("Failed to resolve guest user after registration conflict")
+                raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to resolve guest user")
+            logger.info("Guest evaluator resolved after concurrent registration conflict")
+
+        return TokenResponse(access_token=create_access_token(user.id))
+
+    try:
+        return await run_in_threadpool(_get_or_create_guest)
+    except Exception as e:
+        logger.error(f"Error in guest login: {e}")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"Database error during guest login: {e}"
+        )
 
 
 @router.get("/me", response_model=MeResponse)

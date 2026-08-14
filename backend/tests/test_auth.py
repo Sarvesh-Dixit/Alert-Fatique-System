@@ -45,3 +45,15 @@ def test_short_password_rejected(client):
         },
     )
     assert resp.status_code == 422
+
+
+def test_healthz(client):
+    resp = client.get("/healthz")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
+
+
+def test_guest_login(client):
+    resp = client.post("/api/v1/auth/guest")
+    assert resp.status_code == 200
+    assert "access_token" in resp.json()

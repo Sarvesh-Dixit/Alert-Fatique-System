@@ -104,6 +104,11 @@ app.include_router(admin.router, prefix=API_V1)
 app.include_router(analytics.router, prefix=API_V1)
 
 
+@app.get("/healthz", tags=["system"])
+def healthz():
+    return {"status": "ok"}
+
+
 @app.get("/health", tags=["system"])
 def health():
     return {"status": "ok", "service": settings.app_name, "version": __version__}

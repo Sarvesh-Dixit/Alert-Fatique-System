@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function Landing() {
-  const { user, login, register } = useAuth();
+  const { user, login, register, guestLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [authOpen, setAuthOpen] = useState(false);
@@ -42,24 +42,20 @@ export default function Landing() {
 
   const handleGuestAutoLogin = async () => {
     setBusy(true);
-    const guestEmail = "evaluator@telemetryhighway.com";
-    const guestPass = "evaluatorpass";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 10000); // 10 seconds timeout
+    
     try {
-      await login(guestEmail, guestPass);
+      await guestLogin({ signal: controller.signal });
+      clearTimeout(timeoutId);
       navigate("/dashboard");
-    } catch {
-      try {
-        await register({
-          email: guestEmail,
-          password: guestPass,
-          full_name: "Guest Evaluator",
-          organization_name: "Evaluator Organization"
-        });
-        navigate("/dashboard");
-      } catch (err) {
-        console.error(err);
-        setAuthOpen(true); // Fallback to modal if both fail
-      }
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      console.error("Guest auto-login failed:", err);
+      // Fallback to modal if it fails, allowing user to see error/retry manually
+      setAuthOpen(true);
     } finally {
       setBusy(false);
     }

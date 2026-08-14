@@ -9,7 +9,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { login, register } = useAuth();
+  const { login, register, guestLogin } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form, setForm] = useState({
@@ -50,26 +50,24 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleEvaluatorLogin = async () => {
     setError("");
     setBusy(true);
-    const guestEmail = "evaluator@telemetryhighway.com";
-    const guestPass = "evaluatorpass";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 10000); // 10 seconds timeout
+    
     try {
-      await login(guestEmail, guestPass);
+      await guestLogin({ signal: controller.signal });
+      clearTimeout(timeoutId);
       onClose();
       navigate("/dashboard");
-    } catch (err) {
-      // Register guest on-demand if not exists
-      try {
-        await register({
-          email: guestEmail,
-          password: guestPass,
-          full_name: "Guest Evaluator",
-          organization_name: "Evaluator Organization",
-        });
-        onClose();
-        navigate("/dashboard");
-      } catch (regErr) {
-        setError("Failed to initialize guest session: " + (regErr instanceof Error ? regErr.message : String(regErr)));
-      }
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      console.error("Guest evaluator login failed:", err);
+      const isTimeout = err.name === "AbortError" || controller.signal.aborted;
+      const errorMsg = isTimeout
+        ? "Request timed out after 10 seconds (backend database may be overloaded or locked)."
+        : err instanceof Error ? err.message : String(err);
+      setError("Failed to initialize guest session: " + errorMsg);
     } finally {
       setBusy(false);
     }

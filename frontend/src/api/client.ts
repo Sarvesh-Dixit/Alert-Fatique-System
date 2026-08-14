@@ -1,4 +1,7 @@
-const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const BASE = 
+  import.meta.env.VITE_API_BASE_URL ?? 
+  import.meta.env.VITE_API_URL ?? 
+  "https://alert-fatique-system.onrender.com";
 const TOKEN_KEY = "th_token";
 
 export function getToken(): string | null {
