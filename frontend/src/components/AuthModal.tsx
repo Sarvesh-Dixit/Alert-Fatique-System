@@ -97,7 +97,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <button
           onClick={handleEvaluatorLogin}
           disabled={busy}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg w-full mb-5 hover:opacity-90 transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+          className="bg-gradient-to-r from-cyan-500 to-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg w-full mb-5 hover:opacity-90 transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.25)]"
         >
           <Sparkles className="w-4 h-4" />
           <span>1-Click Evaluator Auto-Login</span>

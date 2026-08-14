@@ -98,46 +98,64 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <NavLink
             to="/monitor"
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition ${
+              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition border ${
                 isActive
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm"
-                  : "text-white/65 hover:bg-white/5 hover:text-white"
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm"
+                  : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"
               }`
             }
           >
-            <Radio className="w-4 h-4 text-emerald-450 animate-pulse" />
-            <span className="flex-1 text-[#A3E635]">Live Monitor</span>
+            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+            <span className="flex-1">Live Monitor</span>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
             </span>
           </NavLink>
 
-          {/* Incidents Feed */}
+          {/* Active Incidents */}
           <NavLink 
             to="/incidents" 
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
+              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border ${
                 isActive && location.pathname.startsWith("/incidents")
-                  ? "bg-signal/10 text-signal border-l-2 border-signal shadow-sm"
-                  : "text-white/65 hover:bg-white/5 hover:text-white"
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm"
+                  : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"
               }`
             }
           >
             <Activity className="w-4 h-4" />
-            <span>Incidents Feed</span>
+            <span>Active Incidents</span>
           </NavLink>
 
           {/* Demo Simulator */}
-          <NavLink to="/demo" className={activeClass}>
+          <NavLink 
+            to="/demo" 
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border ${
+                isActive
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm"
+                  : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"
+              }`
+            }
+          >
             <Zap className="w-4 h-4" />
             <span>Demo Simulator</span>
           </NavLink>
 
-          {/* Rules */}
-          <NavLink to="/rules" className={activeClass}>
+          {/* Suppression Rules */}
+          <NavLink 
+            to="/rules" 
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border ${
+                isActive
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm"
+                  : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"
+              }`
+            }
+          >
             <Settings className="w-4 h-4" />
-            <span>Rules</span>
+            <span>Suppression Rules</span>
           </NavLink>
         </nav>
 

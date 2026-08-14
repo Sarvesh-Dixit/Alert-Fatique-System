@@ -41,12 +41,13 @@ export function TelemetryToastProvider({ children }: { children: React.ReactNode
       icon: "⚡",
     });
 
+    const apiPattern = pattern === "cascading-failure" ? "database-outage" : pattern;
     try {
       // api.post returns the parsed JSON body directly (not an axios-style
       // envelope). The backend responds with { status: "success", ... }.
       const response = await api.post<any>(
-        `/organizations/${orgId}/demo/simulate?sync=false&pattern=${pattern}&count=${count}`,
-        { pattern, sync: false }
+        `/organizations/${orgId}/demo/simulate?sync=false&pattern=${apiPattern}&count=${count}`,
+        { pattern: apiPattern, sync: false }
       );
 
       if (response?.status === "success") {
