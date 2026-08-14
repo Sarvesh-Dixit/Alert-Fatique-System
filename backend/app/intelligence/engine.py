@@ -126,12 +126,33 @@ def _upsert_group(db: Session, ev: dict, now: datetime) -> tuple[ErrorGroup, boo
         )
         db.add(group)
         created = True
+        try:
+            group.event_count = 1
+            db.commit()
+            db.refresh(group)
+        except Exception as e:
+            db.rollback()
+            import logging
+            logging.getLogger("telemetry.api").warning(f"Error group insert failed: {e}")
+    else:
+        try:
+            db.query(ErrorGroup).filter(ErrorGroup.id == group.id).update(
+                {
+                    "event_count": group.event_count + 1,
+                    "last_seen": max(_aware(group.last_seen), now) if group.last_seen else now,
+                    "severity": max_severity(group.severity, ev["severity"]),
+                    "affected_instances": _union(list(group.affected_instances or []), ev.get("_instance")),
+                    "affected_regions": _union(list(group.affected_regions or []), ev.get("region")),
+                },
+                synchronize_session=False
+            )
+            db.commit()
+            db.refresh(group)
+        except Exception as e:
+            db.rollback()
+            import logging
+            logging.getLogger("telemetry.api").warning(f"Error group update failed: {e}")
 
-    group.event_count += 1
-    group.last_seen = max(_aware(group.last_seen), now) if group.last_seen else now
-    group.severity = max_severity(group.severity, ev["severity"])
-    group.affected_instances = _union(list(group.affected_instances or []), ev.get("_instance"))
-    group.affected_regions = _union(list(group.affected_regions or []), ev.get("region"))
     return group, created
 
 
@@ -240,11 +261,20 @@ def run_intelligence(db: Session, ev: dict) -> IntelligenceResult:
             best_group = candidate
 
     if best_group is not None:
-        best_group.gptrace_score = best_similarity
-        if best_group.incident_id:
-            inc = db.get(Incident, best_group.incident_id)
-            if inc:
-                inc.gptrace_score = best_similarity
+        try:
+            db.query(ErrorGroup).filter(ErrorGroup.id == best_group.id).update(
+                {"gptrace_score": best_similarity}, synchronize_session=False
+            )
+            if best_group.incident_id:
+                db.query(Incident).filter(Incident.id == best_group.incident_id).update(
+                    {"gptrace_score": best_similarity}, synchronize_session=False
+                )
+            db.commit()
+            db.refresh(best_group)
+        except Exception as e:
+            db.rollback()
+            import logging
+            logging.getLogger("telemetry.api").warning(f"Error group gptrace_score update skipped: {e}")
 
         # Group it under the existing incident/error_group
         fp = best_group.fingerprint
@@ -254,8 +284,13 @@ def run_intelligence(db: Session, ev: dict) -> IntelligenceResult:
         from app.models.telemetry import TelemetryEvent
         row = db.get(TelemetryEvent, ev["event_id"])
         if row:
-            row.fingerprint = fp
-            db.flush()
+            try:
+                row.fingerprint = fp
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                import logging
+                logging.getLogger("telemetry.api").warning(f"TelemetryEvent fingerprint update skipped: {e}")
 
     group, group_created = _upsert_group(db, ev, now)
 

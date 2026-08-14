@@ -29,6 +29,7 @@ if not db_url.startswith("sqlite"):
         "max_overflow": 10,
         "pool_timeout": 10,
         "pool_recycle": 1800,
+        "connect_args": {"options": "-c statement_timeout=5000"},
     })
 
 engine = create_engine(db_url, **engine_kwargs)

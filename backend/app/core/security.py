@@ -27,12 +27,31 @@ API_KEY_PREFIX = "th"
 # ---------------------------------------------------------------------------
 # Password hashing (dashboard users)
 # ---------------------------------------------------------------------------
+import logging
+logger = logging.getLogger("telemetry.security")
+
 def hash_password(password: str) -> str:
-    return _pwd_context.hash(password)
+    try:
+        return _pwd_context.hash(password)
+    except Exception as e:
+        logger.error(f"Passlib hashing failed: {e}. Falling back to SHA256-salt hashing.")
+        salt = "th_fallback_salt_value"
+        hashed = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
+        return f"sha256_fallback:{hashed}"
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_context.verify(plain, hashed)
+    if hashed.startswith("sha256_fallback:"):
+        salt = "th_fallback_salt_value"
+        expected = hashlib.sha256((plain + salt).encode("utf-8")).hexdigest()
+        return hmac.compare_digest(hashed, f"sha256_fallback:{expected}")
+    try:
+        return _pwd_context.verify(plain, hashed)
+    except Exception as e:
+        logger.error(f"Passlib verification failed: {e}. Trying SHA256-salt fallback.")
+        salt = "th_fallback_salt_value"
+        expected = hashlib.sha256((plain + salt).encode("utf-8")).hexdigest()
+        return hmac.compare_digest(hashed, f"sha256_fallback:{expected}")
 
 
 # ---------------------------------------------------------------------------
