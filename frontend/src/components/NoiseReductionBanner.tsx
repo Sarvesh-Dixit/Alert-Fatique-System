@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Info, ShieldCheck, Zap, HelpCircle, ArrowRight, Activity, Clock } from "lucide-react";
+import { ShieldCheck, Zap, HelpCircle, ArrowRight, Activity, Clock } from "lucide-react";
 import { NoiseReductionKPIs } from "../api/client";
 
 interface NoiseReductionBannerProps {
@@ -28,22 +28,22 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
   const sparkPoints = [12, 18, 15, 45, 90, 85, 24, 15, 8, 12];
 
   return (
-    <div className="relative overflow-hidden bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur-xl shadow-2xl transition hover:border-[#A3E635]/20">
+    <div className="relative overflow-hidden bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-xl shadow-2xl transition hover:border-[#A3E635]/20">
       {/* Visual background gradient pulse */}
       <div className="absolute -top-24 -left-24 w-[300px] h-[300px] rounded-full pointer-events-none bg-gradient-to-tr from-[#A3E635]/5 to-transparent blur-3xl" />
       <div className="absolute -bottom-24 -right-24 w-[300px] h-[300px] rounded-full pointer-events-none bg-gradient-to-bl from-[#38BDF8]/5 to-transparent blur-3xl" />
 
       {/* Info Badge / Tooltip Row */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-5 border-b border-slate-800/80 pb-4 relative z-10">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-slate-800/80 pb-3 relative z-10">
         <div className="flex items-center gap-2">
-          {/* Suppression State live active badge */}
+          {/* Suppression State live active badge with shadow glow */}
           {hasActiveCooldowns ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider animate-pulse">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.2)]">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               COOLDOWN ENGAGED
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider shadow-[0_0_12px_rgba(16,185,129,0.15)]">
               <span className="live-dot" />
               REAL-TIME MONITORING
             </span>
@@ -56,7 +56,7 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
             onClick={() => setShowTooltip(!showTooltip)}
-            className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-400 hover:text-white bg-slate-850 border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
+            className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-400 hover:text-white bg-slate-950/60 border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
           >
             <HelpCircle className="w-3.5 h-3.5 text-[#A3E635]" />
             <span>Judge Guide: Deduplication Stack</span>
@@ -83,13 +83,13 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
       </div>
 
       {/* Main KPI Columns Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 relative z-10">
         
         {/* Hero KPI Card: Noise Reduction Ratio */}
-        <div className="md:col-span-5 flex flex-col justify-between p-5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-850 hover:bg-slate-950/60 transition group relative overflow-hidden">
+        <div className="md:col-span-5 flex flex-col justify-between p-4.5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-800 hover:bg-slate-950/60 transition group relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#A3E635]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#A3E635]/8 transition-all" />
           
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-1">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-[#A3E635]" />
               Noise Reduction Ratio
@@ -99,18 +99,21 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
             </span>
           </div>
 
-          <div className="flex items-end gap-3 my-2">
-            <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-[#A3E635]">
+          <div className="flex items-end gap-3 my-1 relative">
+            {/* Glow backdrop */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 blur-xl opacity-80 pointer-events-none rounded-lg" />
+            
+            <span className="relative text-4xl sm:text-5xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-[#A3E635]">
               {noiseReductionRatio.toFixed(1)}%
             </span>
-            <div className="flex flex-col mb-1 text-[10px] text-slate-400 font-mono">
+            <div className="relative flex flex-col mb-1 text-[10px] text-slate-450 font-mono">
               <span className="text-[#A3E635] font-semibold">⚡ Max Efficiency</span>
               <span>Noise Reduced</span>
             </div>
           </div>
 
           {/* Micro Sparkline Visualizer */}
-          <div className="flex items-end gap-1 h-6 w-full mt-2 pt-2 border-t border-slate-900 overflow-hidden">
+          <div className="flex items-end gap-1 h-5 w-full mt-1.5 pt-1.5 border-t border-slate-900/60 overflow-hidden">
             {sparkPoints.map((val, idx) => (
               <div
                 key={idx}
@@ -123,9 +126,10 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
         </div>
 
         {/* Compression Ratio Ingestion Card */}
-        <div className="md:col-span-4 flex flex-col justify-between p-5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-850 hover:bg-slate-950/60 transition group relative">
-          
-          <div className="flex justify-between items-start mb-2">
+        <div className="md:col-span-4 flex flex-col justify-between p-4.5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-800 hover:bg-slate-950/60 transition group relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#38BDF8]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#38BDF8]/8 transition-all" />
+
+          <div className="flex justify-between items-start mb-1">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-[#38BDF8]" />
               Compression Ratio
@@ -135,53 +139,60 @@ export default function NoiseReductionBanner({ kpis, hasActiveCooldowns = false 
             </span>
           </div>
 
-          <div className="flex flex-col justify-center my-3">
-            <div className="flex items-center gap-3.5">
+          <div className="flex flex-col justify-center my-1 relative">
+            {/* Glow backdrop */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/10 to-indigo-500/5 blur-xl opacity-60 pointer-events-none rounded-lg" />
+            
+            <div className="relative flex items-center gap-3.5 py-1">
               <div className="flex flex-col">
-                <span className="text-2xl font-black font-mono text-slate-100">{rawEvents}</span>
+                <span className="text-2xl sm:text-3xl font-black font-mono text-slate-100">{rawEvents}</span>
                 <span className="text-[9px] font-mono text-slate-500 uppercase">Raw Ingested</span>
               </div>
               
-              <ArrowRight className="w-5 h-5 text-slate-500 animate-pulse shrink-0" />
+              <ArrowRight className="w-4 h-4 text-slate-500 animate-pulse shrink-0" />
               
               <div className="flex flex-col">
-                <span className="text-2xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
+                <span className="text-2xl sm:text-3xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
                 <span className="text-[9px] font-mono text-slate-400 uppercase">Incident Thread</span>
               </div>
             </div>
           </div>
 
-          <div className="text-[10.5px] text-slate-400 font-sans border-t border-slate-900 pt-2 flex items-center justify-between">
+          <div className="text-[10.5px] text-slate-400 font-sans border-t border-slate-900/60 pt-1.5 flex items-center justify-between">
             <span>Compression Rate:</span>
             <strong className="text-slate-200 font-mono">
-              {rawEvents} Raw Alerts Ingested → {incidentThreads} Consolidated Incident Thread{incidentThreads > 1 ? "s" : ""}
+              {rawEvents} Raw Alerts → {incidentThreads} Thread{incidentThreads > 1 ? "s" : ""}
             </strong>
           </div>
         </div>
 
-        {/* Triage Savings KPI Card */}
-        <div className="md:col-span-3 flex flex-col justify-between p-5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-850 hover:bg-slate-950/60 transition group relative">
-          
-          <div className="flex justify-between items-start mb-2">
+        {/* On-Call Hours Saved Card */}
+        <div className="md:col-span-3 flex flex-col justify-between p-4.5 bg-slate-950/40 border border-slate-800/60 rounded-xl hover:border-slate-800 hover:bg-slate-950/60 transition group relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-28 h-28 bg-amber-500/5 rounded-full pointer-events-none blur-xl group-hover:bg-amber-500/8 transition-all" />
+
+          <div className="flex justify-between items-start mb-1">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-amber-400" />
-              Triage Savings
+              On-Call Hours Saved
             </span>
             <span className="text-[9px] font-mono text-slate-500">
               Outage Mitigation
             </span>
           </div>
 
-          <div className="my-2.5">
-            <span className="text-3xl font-black font-mono tracking-tight text-amber-300">
+          <div className="my-1 relative">
+            {/* Glow backdrop */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/10 to-orange-500/5 blur-xl opacity-60 pointer-events-none rounded-lg" />
+            
+            <span className="relative text-3xl font-black font-mono tracking-tight text-amber-300">
               {formatTimeSaved(minsSaved)}
             </span>
-            <p className="text-[10.5px] text-slate-400 mt-1 leading-normal">
-              Estimated manual alert fatigue recovery hours prevented per event burst.
+            <p className="relative text-[10.5px] text-slate-400 mt-0.5 leading-tight">
+              Alert triage hours prevented per event burst.
             </p>
           </div>
 
-          <div className="text-[10.5px] text-slate-450 font-mono border-t border-slate-900 pt-2">
+          <div className="text-[10.5px] text-slate-450 font-mono border-t border-slate-900/60 pt-1.5">
             <span>On-call fatigue prevented per burst</span>
           </div>
         </div>

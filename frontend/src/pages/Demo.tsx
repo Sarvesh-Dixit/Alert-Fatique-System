@@ -150,11 +150,17 @@ export default function Demo() {
   }
 
   const getScenarioIcon = (id: string) => {
+    const isCurrentBusy = busy === id;
+    const colorClass = isCurrentBusy ? "text-emerald-400 animate-pulse fill-emerald-400/10" : "text-cyan-400 fill-cyan-400/5";
+
     const name = id.toLowerCase();
-    if (name.includes("database") || name.includes("postgres")) return <Layers className="w-5 h-5 text-rose-400" />;
-    if (name.includes("hdfs") || name.includes("outage") || name.includes("storage")) return <Database className="w-5 h-5 text-cyan-400" />;
-    if (name.includes("burst") || name.includes("spike")) return <Zap className="w-5 h-5 text-amber-400" />;
-    return <Activity className="w-5 h-5 text-indigo-400" />;
+    if (name.includes("database") || name.includes("postgres") || name.includes("failure")) {
+      return <Layers className={`w-5 h-5 ${colorClass}`} />;
+    }
+    if (name.includes("hdfs") || name.includes("outage") || name.includes("storage")) {
+      return <Database className={`w-5 h-5 ${colorClass}`} />;
+    }
+    return <Zap className={`w-5 h-5 ${colorClass}`} />;
   };
 
   const formatLogLine = (line: string) => {
@@ -278,11 +284,11 @@ export default function Demo() {
                     </div>
                     
                     <button 
-                      className="btn w-full mt-4 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-bold text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer" 
+                      className="w-full mt-4 px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-400 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5" 
                       disabled={!!busy} 
                       onClick={() => run(s.id)}
                     >
-                      <Play className="w-3 h-3 fill-current shrink-0" />
+                      <Play className="w-3 h-3 fill-emerald-400/20 shrink-0" />
                       <span>{isBusy ? "Injecting..." : "Inject Scenario"}</span>
                     </button>
                   </div>

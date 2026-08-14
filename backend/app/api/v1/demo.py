@@ -32,14 +32,15 @@ router = APIRouter(prefix="/organizations/{organization_id}/demo", tags=["demo"]
 REGIONS = ["india", "us-east", "eu-west"]
 
 SCENARIOS = {
-    "normal-traffic": "Low-volume mixed INFO/WARNING traffic, no incident",
-    "error-burst": "A burst of identical errors in one service",
-    "database-outage": "DB connection failures across multiple apps/instances",
-    "cpu-spike": "System CPU spike across instances",
-    "api-timeout-storm": "API gateway timeout storm",
-    "multi-instance-failure": "Same error across many instances (one incident)",
-    "auth-failure-storm": "Repeated failed logins → one security incident",
-    "loghub-hdfs-outage": "Real-world HDFS error/warning log outage scenario from LogHub dataset",
+  "normal-traffic": "Low-volume mixed INFO/WARNING traffic, no incident",
+  "error-burst": "A burst of identical errors in one service",
+  "cascading-failure": "Cascading database outage across multiple dependent services",
+  "database-outage": "DB connection failures across multiple apps/instances",
+  "cpu-spike": "System CPU spike across instances",
+  "api-timeout-storm": "API gateway timeout storm",
+  "multi-instance-failure": "Same error across many instances (one incident)",
+  "auth-failure-storm": "Repeated failed logins → one security incident",
+  "loghub-hdfs-outage": "Real-world HDFS error/warning log outage scenario from LogHub dataset",
 }
 
 
@@ -117,7 +118,7 @@ def _generate(scenario: str, apps: list[Application], count: int) -> list[dict]:
                                   message=f"Payment gateway rejected charge {new_id('chg')}",
                                   metadata={"instance": f"srv-{random.randint(1,4)}",
                                             "exception_type": "PaymentError"}))
-    elif scenario == "database-outage":
+    elif scenario in ("database-outage", "cascading-failure"):
         services = ["orders", "checkout", "billing"]
         for i in range(count):
             app = apps[i % len(apps)]
