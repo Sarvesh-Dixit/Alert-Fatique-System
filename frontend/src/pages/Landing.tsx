@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ComparisonSection from "../components/ComparisonSection";
+import LogoStrip from "../components/LogoStrip";
+import HowItWorks from "../components/HowItWorks";
 import AuthModal from "../components/AuthModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -273,6 +275,12 @@ export default function Landing() {
           </div>
         </motion.div>
       </section>
+
+      {/* Ecosystem compatibility strip */}
+      <LogoStrip />
+
+      {/* How it works — three steps from noise to signal */}
+      <HowItWorks />
 
       {/* Comparative ROI & Suppression section */}
       <div id="cooldown">

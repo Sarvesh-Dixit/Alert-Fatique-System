@@ -1,16 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Telemetry Highway</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <meta name="google" content="notranslate" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="Telemetry Highway is an intelligent alert fatigue reducer. Collapse 10,000 noisy logs into one actionable incident thread with GPTrace vector clustering, automated cooldown, and clean Slack/Discord webhook summaries."
+    />
+    <meta name="theme-color" content="#0B0C14" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Telemetry Highway | Intelligent Alert Fatigue Reducer" />
+    <meta
+      property="og:description"
+      content="A telemetry proxy for modern SRE teams. Cluster traces, suppress duplicate alerts, and route clean incidents to Slack, Discord, and PagerDuty."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en" />
+    <meta property="og:site_name" content="Telemetry Highway" />
+    <meta property="og:image" content="/og-image.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Telemetry Highway | Intelligent Alert Fatigue Reducer" />
+    <meta
+      name="twitter:description"
+      content="Collapse noisy telemetry into actionable incidents with GPTrace vector clustering and cooldown matrices."
+    />
+    <meta name="twitter:image" content="/og-image.svg" />
+
+    <!-- PWA / Icons -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="shortcut icon" type="image/svg+xml" href="/favicon-dark.svg" />
+    <link rel="apple-touch-icon" href="/favicon-dark.svg" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Theme + favicon boot: applies saved theme early, swaps favicon to match OS preference -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("th-theme-preference");
+          if (saved) {
+            document.documentElement.className = ["theme", saved.toLowerCase()].join(" ");
+          }
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var favSuffix = prefersDark ? "dark" : "light";
+          var favicon = document.querySelector("link[rel='shortcut icon']");
+          if (favicon) favicon.setAttribute("href", "/favicon-" + favSuffix + ".svg");
+        } catch (_) {
+          /* non-fatal */
+        }
+      })();
+    </script>
+
+    <title>Telemetry Highway · Intelligent Alert Fatigue Reducer</title>
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>Please enable JavaScript to run Telemetry Highway.</noscript>
+    <div id="root" class="min-h-screen"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
