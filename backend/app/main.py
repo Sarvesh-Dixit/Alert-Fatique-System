@@ -1,6 +1,7 @@
 """FastAPI application factory for the Telemetry Highway gateway."""
 from __future__ import annotations
 
+import json
 import logging
 from contextlib import asynccontextmanager
 
@@ -52,19 +53,41 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — the Vite dashboard talks to this API from the browser. Origins are
-# configurable via CORS_ORIGINS (comma-separated); "*" allows anything (dev).
-_origins_raw = settings.cors_origins.strip()
-_cors_origins = ["*"] if _origins_raw == "*" else [
-    o.strip() for o in _origins_raw.split(",") if o.strip()
+# Parse, normalize, and sanitize CORS origins
+default_origins = [
+    "https://alert-fatique-system.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
+
+_cors_origins: list[str] = list(default_origins)
+if hasattr(settings, "cors_origins") and settings.cors_origins:
+    raw = settings.cors_origins
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if raw.startswith("[") and raw.endswith("]"):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, list):
+                    _cors_origins.extend([str(o).strip().rstrip("/") for o in parsed if str(o).strip()])
+            except Exception:
+                pass
+        else:
+            _cors_origins.extend([o.strip().rstrip("/") for o in raw.split(",") if o.strip()])
+    elif isinstance(raw, list):
+        _cors_origins.extend([str(o).strip().rstrip("/") for o in raw if str(o).strip()])
+
+# Deduplicate origins while preserving order
+origins = [o for i, o in enumerate(_cors_origins) if o and o not in _cors_origins[:i]]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
-    # Credentials cannot be combined with a wildcard origin per the CORS spec.
-    allow_credentials=_cors_origins != ["*"],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Matches all Vercel domains and preview URLs
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 API_V1 = "/api/v1"
