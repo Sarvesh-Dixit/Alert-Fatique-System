@@ -203,8 +203,25 @@ def run_sync_simulation(
     demo_apps = _ensure_demo_apps(db, org_id, apps_count)
     events = _generate(scenario, demo_apps, count)
 
+    db.info["batch_mode"] = True
     for ev in events:
         process_event(db, ev, commit=False)
+        
+    if "pending_scores" in db.info:
+        from app.models.incident import Incident, ErrorGroup
+        for (kind, target_id), score in db.info["pending_scores"].items():
+            try:
+                if kind == "group":
+                    db.query(ErrorGroup).filter(ErrorGroup.id == target_id).update(
+                        {"gptrace_score": score}, synchronize_session=False
+                    )
+                elif kind == "incident":
+                    db.query(Incident).filter(Incident.id == target_id).update(
+                        {"gptrace_score": score}, synchronize_session=False
+                    )
+            except Exception as e:
+                pass
+        db.info["pending_scores"] = {}
     db.commit()
 
     # Summarize the incidents touched by this simulation window.
@@ -307,6 +324,7 @@ async def async_telemetry_worker(
 
         # 3. Stream/Process events
         batch_size = 50 if is_postgres else 1
+        db.info["batch_mode"] = True
         for idx, ev in enumerate(events):
             # Pre-compute trace embedding in worker thread and store on event dict
             from fastapi.concurrency import run_in_threadpool
@@ -327,6 +345,21 @@ async def async_telemetry_worker(
             try:
                 process_event(db, ev, commit=False)
                 if (idx + 1) % batch_size == 0 or (idx + 1) == len(events):
+                    if "pending_scores" in db.info:
+                        from app.models.incident import Incident, ErrorGroup
+                        for (kind, target_id), score in db.info["pending_scores"].items():
+                            try:
+                                if kind == "group":
+                                    db.query(ErrorGroup).filter(ErrorGroup.id == target_id).update(
+                                        {"gptrace_score": score}, synchronize_session=False
+                                    )
+                                elif kind == "incident":
+                                    db.query(Incident).filter(Incident.id == target_id).update(
+                                        {"gptrace_score": score}, synchronize_session=False
+                                    )
+                            except Exception as e:
+                                pass
+                        db.info["pending_scores"] = {}
                     db.commit()
             except Exception as e:
                 db.rollback()

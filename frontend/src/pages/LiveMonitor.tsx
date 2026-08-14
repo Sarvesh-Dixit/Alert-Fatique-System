@@ -209,7 +209,7 @@ export default function LiveMonitor() {
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<Range>("24H");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const inflight = useRef<Promise<unknown> | null>(null);
+  const isFetchingRef = useRef(false);
 
   const handleInject = async (scenario: string) => {
     if (!currentOrg) return;
@@ -272,16 +272,15 @@ export default function LiveMonitor() {
 
   const load = useCallback(async () => {
     if (!currentOrg) return;
-    if (inflight.current) return inflight.current;
-    const p = api.get<{
-      kpis: NoiseReductionKPIs;
-      cooldown_matrix: CooldownState[];
-      incidents: Incident[];
-      applications: { id: string; name: string }[];
-    }>(`/organizations/${currentOrg.id}/dashboard-feed`);
-    inflight.current = p;
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
-      const data = await p;
+      const data = await api.get<{
+        kpis: NoiseReductionKPIs;
+        cooldown_matrix: CooldownState[];
+        incidents: Incident[];
+        applications: { id: string; name: string }[];
+      }>(`/organizations/${currentOrg.id}/dashboard-feed`);
       setKpis(data.kpis);
       setIncidents(data.incidents ?? []);
       setCooldowns(data.cooldown_matrix ?? []);
@@ -289,7 +288,7 @@ export default function LiveMonitor() {
     } catch (err) {
       console.error("LiveMonitor load failed", err);
     } finally {
-      inflight.current = null;
+      isFetchingRef.current = false;
       setLoading(false);
     }
   }, [currentOrg]);

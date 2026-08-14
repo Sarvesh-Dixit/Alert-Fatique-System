@@ -261,20 +261,37 @@ def run_intelligence(db: Session, ev: dict) -> IntelligenceResult:
             best_group = candidate
 
     if best_group is not None:
-        try:
-            db.query(ErrorGroup).filter(ErrorGroup.id == best_group.id).update(
-                {"gptrace_score": best_similarity}, synchronize_session=False
-            )
-            if best_group.incident_id:
-                db.query(Incident).filter(Incident.id == best_group.incident_id).update(
+        if db.info.get("batch_mode"):
+            if "pending_scores" not in db.info:
+                db.info["pending_scores"] = {}
+            gp_id = best_group.id
+            inc_id = best_group.incident_id
+            if gp_id:
+                db.info["pending_scores"][("group", gp_id)] = max(
+                    db.info["pending_scores"].get(("group", gp_id), 0.0),
+                    best_similarity
+                )
+            if inc_id:
+                db.info["pending_scores"][("incident", inc_id)] = max(
+                    db.info["pending_scores"].get(("incident", inc_id), 0.0),
+                    best_similarity
+                )
+            db.flush()
+        else:
+            try:
+                db.query(ErrorGroup).filter(ErrorGroup.id == best_group.id).update(
                     {"gptrace_score": best_similarity}, synchronize_session=False
                 )
-            db.commit()
-            db.refresh(best_group)
-        except Exception as e:
-            db.rollback()
-            import logging
-            logging.getLogger("telemetry.api").warning(f"Error group gptrace_score update skipped: {e}")
+                if best_group.incident_id:
+                    db.query(Incident).filter(Incident.id == best_group.incident_id).update(
+                        {"gptrace_score": best_similarity}, synchronize_session=False
+                    )
+                db.commit()
+                db.refresh(best_group)
+            except Exception as e:
+                db.rollback()
+                import logging
+                logging.getLogger("telemetry.api").warning(f"Error group gptrace_score update skipped: {e}")
 
         # Group it under the existing incident/error_group
         fp = best_group.fingerprint

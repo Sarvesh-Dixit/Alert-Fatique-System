@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { api, type DemoScenario, type NoiseReductionKPIs, type CooldownState } from "../api/client";
 import { useAuth } from "../context/AuthContext";
@@ -57,15 +57,20 @@ export default function Demo() {
   
   const [logs, setLogs] = useState<string[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
+  const isFetchingRef = useRef(false);
 
   const loadFeedData = useCallback(async () => {
     if (!currentOrg) return;
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const feedData = await api.get<any>(`/organizations/${currentOrg.id}/dashboard-feed`);
       setKpis(feedData?.kpis ?? null);
       setCooldowns(feedData?.cooldown_matrix ?? []);
     } catch (err) {
       console.error("Failed to load feed stats in Demo", err);
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [currentOrg]);
 
