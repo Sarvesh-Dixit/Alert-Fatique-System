@@ -20,15 +20,14 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
     const timer = setInterval(() => {
       setLocalCooldowns((prev) =>
         prev.map((cd) => {
-          if (cd.remaining_seconds > 0) {
-            const nextSecs = cd.remaining_seconds - 1;
-            return {
-              ...cd,
-              remaining_seconds: nextSecs,
-              status: nextSecs > 0 ? "ACTIVE_SUPPRESSION" : "COOLDOWN_EXPIRED",
-            };
-          }
-          return cd;
+          if (!cd.expiry_time) return cd;
+          const expiryMs = new Date(cd.expiry_time).getTime();
+          const remaining = Math.max(0, Math.floor((expiryMs - Date.now()) / 1000));
+          return {
+            ...cd,
+            remaining_seconds: remaining,
+            status: remaining > 0 ? "ACTIVE_SUPPRESSION" : "COOLDOWN_EXPIRED",
+          };
         })
       );
     }, 1000);

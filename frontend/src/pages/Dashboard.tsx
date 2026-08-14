@@ -48,7 +48,29 @@ export default function Dashboard() {
   }, [load]);
 
   // Connect to real-time SSE updates
-  useIncidentStream(currentOrg?.id, load, { isSimulationRunning });
+  // Connect to real-time SSE updates
+  useIncidentStream(currentOrg?.id, load, {
+    isSimulationRunning,
+    onEvent: (event) => {
+      if (event.type === "cooldown_update") {
+        const updatedCd = event.data;
+        setCooldowns((prev) => {
+          const exists = prev.some((c) => c.incident_id === updatedCd.incident_id);
+          if (exists) {
+            return prev.map((c) => (c.incident_id === updatedCd.incident_id ? updatedCd : c));
+          } else {
+            return [updatedCd, ...prev];
+          }
+        });
+      } else if (
+        event.type === "incident_updated" ||
+        event.type === "incident_created" ||
+        event.type === "suppression_active"
+      ) {
+        load();
+      }
+    }
+  });
 
   const formatMetric = (num: number) => {
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
