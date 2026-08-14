@@ -17,7 +17,7 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
 
   // Simulated log processor ticks
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
     if (isInjecting) {
       setProcessedCount(0);
       interval = setInterval(() => {

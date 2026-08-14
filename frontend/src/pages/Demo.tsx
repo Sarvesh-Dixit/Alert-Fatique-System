@@ -80,7 +80,7 @@ export default function Demo() {
 
   // Live timer ticks for terminal
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
     if (isInjecting) {
       setProcessedCount(0);
       interval = setInterval(() => {
