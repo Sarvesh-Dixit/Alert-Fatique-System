@@ -428,6 +428,38 @@ def run_intelligence(db: Session, ev: dict) -> IntelligenceResult:
         },
     )
 
+    if incident.last_notified_at:
+        try:
+            last_notified = incident.last_notified_at
+            if last_notified.tzinfo is None:
+                last_notified = last_notified.replace(tzinfo=timezone.utc)
+            cooldown_sec = settings.cooldown_for(incident.severity)
+            elapsed = (now - last_notified).total_seconds()
+            remaining = max(0, int(cooldown_sec - elapsed))
+            expiry = datetime.fromtimestamp(last_notified.timestamp() + cooldown_sec, tz=timezone.utc)
+            status_str = "ACTIVE_SUPPRESSION" if remaining > 0 else "COOLDOWN_EXPIRED"
+            app_name = incident.affected_applications[0] if (incident.affected_applications and len(incident.affected_applications) > 0) else "Unknown"
+
+            realtime.publish(
+                incident.organization_id,
+                "cooldown_update",
+                {
+                    "incident_id": incident.id,
+                    "service": incident.service or "global",
+                    "application_name": app_name,
+                    "title": incident.title,
+                    "trigger_time": last_notified.isoformat(),
+                    "expiry_time": expiry.isoformat(),
+                    "remaining_seconds": remaining,
+                    "severity": incident.severity,
+                    "suppressed_count": incident.events_suppressed,
+                    "status": status_str,
+                },
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger("telemetry.api").error(f"Failed to publish cooldown_update: {e}")
+
     db.flush()
     return IntelligenceResult(group, spike, incident, notified,
                               decision.kind if decision.should_notify else "suppressed")

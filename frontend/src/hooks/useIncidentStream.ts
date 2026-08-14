@@ -9,7 +9,10 @@ import { streamUrl } from "../api/client";
 export function useIncidentStream(
   organizationId: string | undefined,
   onUpdate: () => void | Promise<void>,
-  options?: { isSimulationRunning?: boolean }
+  options?: { 
+    isSimulationRunning?: boolean;
+    onEvent?: (event: { type: string; data: any }) => void;
+  }
 ) {
   const cb = useRef(onUpdate);
   cb.current = onUpdate;
@@ -34,8 +37,16 @@ export function useIncidentStream(
         }
       };
 
-      es.onmessage = () => {
+      es.onmessage = (event) => {
         if (isMounted) {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (options?.onEvent && parsed) {
+              options.onEvent(parsed);
+            }
+          } catch (e) {
+            // best-effort event parsing
+          }
           cb.current();
         }
       };
