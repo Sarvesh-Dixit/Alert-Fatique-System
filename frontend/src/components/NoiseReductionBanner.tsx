@@ -70,46 +70,52 @@ export default function NoiseReductionBanner({
   }, [range, noiseReductionRatio]);
 
   return (
-    <div className="relative bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 sm:p-7 space-y-6 shadow-xl font-sans overflow-hidden">
+    <div className="relative bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 sm:p-7 space-y-6 shadow-xl font-sans overflow-visible">
       {/* Decorative Grid Lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f23_1px,transparent_1px),linear-gradient(to_bottom,#1f1f23_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-35" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f23_1px,transparent_1px),linear-gradient(to_bottom,#1f1f23_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-35 rounded-2xl" />
 
-      {/* Judgment Level Alerts & Trigger Indicators */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800/80 pb-4 mb-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-mono font-bold tracking-wider uppercase select-none ${
+      {/* Top Subheader Row */}
+      <div className="relative z-30 flex flex-wrap items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-3">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border ${
             hasActiveCooldowns
-              ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-              : "bg-emerald-500/10 text-[#A3E635] border-emerald-500/20"
+              ? "bg-rose-500/10 text-rose-455 border-rose-500/20"
+              : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${hasActiveCooldowns ? "bg-rose-500 animate-pulse" : "bg-[#A3E635]"}`} />
-            <span>Outage Suppression Matrix: {hasActiveCooldowns ? "Engaged (Rate Limiting)" : "Nominal"}</span>
-          </div>
-
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-850 text-[10px] font-mono text-zinc-400 select-none">
-            <span>Deduplication similarity threshold:</span>
-            <span className="text-[#A3E635] font-extrabold font-mono">≥ 0.88 Cosine</span>
-          </div>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasActiveCooldowns ? "bg-rose-500" : "bg-emerald-400"}`} />
+            <span>OUTAGE SUPPRESSION MATRIX: {hasActiveCooldowns ? "ENGAGED" : "NOMINAL"}</span>
+          </span>
+          <span className="text-xs font-mono text-zinc-400 hidden sm:inline">
+            Deduplication similarity threshold: &ge; 0.88 Cosine
+          </span>
         </div>
 
-        {/* Judge Guide Popover */}
-        <div className="relative inline-block">
-          <button 
+        {/* Judge Guide Popover Anchor */}
+        <div className="relative">
+          <button
+            type="button"
             onClick={() => setShowGuide(!showGuide)}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/80 bg-[#18181b] px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/80 bg-[#18181b] hover:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-zinc-100 transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5 text-emerald-400"/>
             <span>Judge Guide: Deduplication Stack</span>
           </button>
 
+          {/* Popover Card */}
           {showGuide && (
-            <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 rounded-xl border border-zinc-700 bg-[#18181b] p-5 text-xs text-zinc-200 shadow-2xl z-50 space-y-3">
+            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-xl border border-zinc-700 bg-[#18181b] p-5 text-xs text-zinc-200 shadow-2xl z-50 space-y-3">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                 <span className="font-semibold text-zinc-100 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400"/>
                   AI Noise Deduplication Stack
                 </span>
-                <button onClick={() => setShowGuide(false)} className="text-zinc-400 hover:text-zinc-200">✕</button>
+                <button 
+                  type="button"
+                  onClick={() => setShowGuide(false)} 
+                  className="text-zinc-400 hover:text-zinc-200"
+                >
+                  ✕
+                </button>
               </div>
               <p className="leading-relaxed text-zinc-300">
                 Our real-time pipeline groups high-frequency error bursts into a single actionable incident thread using:
