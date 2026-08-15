@@ -142,14 +142,14 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
   };
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-6 flex flex-col gap-4 shadow-xl">
+    <div className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-6 flex flex-col gap-4 shadow-xl">
       <div className="flex items-center gap-2">
         <Terminal className="w-5 h-5 text-cyan-400 animate-pulse" />
         <div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
             Telemetry Simulation Pipeline
           </h3>
-          <p className="text-slate-400 text-xs">Inject high-volume telemetry traffic to validate semantic clustering and deduplication</p>
+          <p className="text-zinc-400 text-xs">Inject high-volume telemetry traffic to validate semantic clustering and deduplication</p>
         </div>
       </div>
 
@@ -159,7 +159,7 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
           className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "error-burst"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
+              : "border-zinc-800 bg-[#09090b] hover:bg-[#18181b] text-zinc-350 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("error-burst", 30)}
@@ -173,7 +173,7 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
           className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "loghub-hdfs-outage"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
+              : "border-zinc-800 bg-[#09090b] hover:bg-[#18181b] text-zinc-350 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("loghub-hdfs-outage", 30)}
@@ -187,7 +187,7 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
           className={`px-4 py-2.5 text-xs font-bold rounded-lg border transition-all hover:scale-[1.02] cursor-pointer flex items-center disabled:opacity-50 ${
             busy === "database-outage"
               ? "animate-pulse border-cyan-500/50 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-              : "border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-300 hover:text-white"
+              : "border-zinc-800 bg-[#09090b] hover:bg-[#18181b] text-zinc-350 hover:text-white"
           }`}
           disabled={isInjecting}
           onClick={() => runScenario("database-outage", 30)}
@@ -199,8 +199,8 @@ export default function DemoSimulator({ onScenarioTriggered, onSimulationStateCh
 
       {/* Terminal Log Output Drawer */}
       {logs.length > 0 && (
-        <div className="bg-black/80 border border-slate-800 rounded-xl font-mono text-xs text-slate-300 p-4 shadow-2xl flex flex-col gap-2">
-          <div className="flex justify-between items-center border-b border-slate-800 pb-2 mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+        <div className="bg-[#000000] border border-zinc-800 rounded-xl font-mono text-xs text-zinc-300 p-4 shadow-2xl flex flex-col gap-2">
+          <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
             <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
             {isInjecting && (
               <span className="text-cyan-400 font-bold animate-pulse">

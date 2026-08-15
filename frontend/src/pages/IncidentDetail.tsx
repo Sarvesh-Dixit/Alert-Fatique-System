@@ -81,135 +81,169 @@ export default function IncidentDetail() {
   if (!inc) return <div className="text-white/50">Loading…</div>;
 
   return (
-    <div className="font-sans">
-      <Link to="/incidents" className="text-white/40 text-sm hover:text-white transition">← Back to Incidents</Link>
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mt-2 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <SeverityBadge severity={inc.severity} />
-            <StatusBadge status={inc.status} />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+        <Link to="/incidents" className="text-zinc-400 text-sm hover:text-zinc-100 transition">← Back to Incidents</Link>
+        
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mt-2 mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <SeverityBadge severity={inc.severity} />
+              <StatusBadge status={inc.status} />
+            </div>
+            <h1 className="text-2xl font-bold text-white/95">{inc.title}</h1>
+            <div className="text-zinc-400 text-xs mt-1.5 font-mono tracking-tight">
+              first seen {fmtTime(inc.first_seen)} · last seen {fmtTime(inc.last_seen)}
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white/95">{inc.title}</h1>
-          <div className="text-white/40 text-xs mt-1.5 font-mono tracking-tight">
-            first seen {fmtTime(inc.first_seen)} · last seen {fmtTime(inc.last_seen)}
+          <div className="flex gap-2">
+            {inc.status === "OPEN" && (
+              <button 
+                className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-350 hover:text-white text-xs font-bold rounded-lg transition cursor-pointer" 
+                onClick={() => setStatus("ACKNOWLEDGED")}
+              >
+                Acknowledge
+              </button>
+            )}
+            {inc.status !== "RESOLVED" && inc.status !== "CLOSED" && (
+              <button 
+                className="px-3.5 py-1.5 bg-[#A3E635] text-black hover:bg-[#A3E635]/90 font-bold rounded-lg transition cursor-pointer shadow-lg text-xs" 
+                onClick={() => setStatus("RESOLVED")}
+              >
+                Resolve
+              </button>
+            )}
+            {inc.status === "RESOLVED" && (
+              <button 
+                className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-350 hover:text-white text-xs font-bold rounded-lg transition cursor-pointer" 
+                onClick={() => setStatus("CLOSED")}
+              >
+                Close
+              </button>
+            )}
           </div>
-        </div>
-        <div className="flex gap-2">
-          {inc.status === "OPEN" && <button className="btn-ghost text-xs py-1.5 px-3 font-semibold" onClick={() => setStatus("ACKNOWLEDGED")}>Acknowledge</button>}
-          {inc.status !== "RESOLVED" && inc.status !== "CLOSED" && (
-            <button className="btn bg-gradient-to-r from-[#98A4F7] to-[#5B63D3] hover:from-[#98A4F7]/90 hover:to-[#5B63D3]/90 text-white text-xs font-bold py-1.5 px-4" onClick={() => setStatus("RESOLVED")}>Resolve</button>
-          )}
-          {inc.status === "RESOLVED" && <button className="btn-ghost text-xs py-1.5 px-3 font-semibold" onClick={() => setStatus("CLOSED")}>Close</button>}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Stat label="Events" value={inc.event_count.toLocaleString()} />
-        <Stat label="Spike" value={`${inc.spike_multiplier}×`} tone="text-amber-400" />
-        <Stat label="Notifications" value={inc.notifications_sent} />
-        <Stat label="Noise reduction" value={`${inc.noise_reduction_ratio}%`} tone="text-emerald-400" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="card border border-[#252940] bg-[#161928]">
-          <div className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Affected services ({inc.affected_services.length})</div>
-          <div className="flex flex-wrap gap-1">
-            {inc.affected_services.map((s) => <span key={s} className="badge bg-[#0B0C14] border border-[#252940] text-white/70 font-mono text-[10px] tracking-tight">{s}</span>)}
-          </div>
-        </div>
-        <div className="card border border-[#252940] bg-[#161928]">
-          <div className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Affected instances ({inc.affected_instances.length})</div>
-          <div className="flex flex-wrap gap-1 max-h-24 overflow-auto scrollbar-thin">
-            {inc.affected_instances.map((s) => <span key={s} className="badge bg-[#0B0C14] border border-[#252940] text-white/70 font-mono text-[10px] tracking-tight">{s}</span>)}
-          </div>
-        </div>
-        <div className="card border border-[#252940] bg-[#161928]">
-          <div className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">Affected regions ({inc.affected_regions.length})</div>
-          <div className="flex flex-wrap gap-1">
-            {inc.affected_regions.map((s) => <span key={s} className="badge bg-[#0B0C14] border border-[#252940] text-white/70 font-mono text-[10px] tracking-tight">{s}</span>)}
-          </div>
-          <div className="text-white/40 text-[10px] uppercase font-bold tracking-wider mt-3.5 pt-2 border-t border-[#252940]/60 font-mono">
-            baseline <strong className="text-white font-mono tracking-tight">{inc.baseline_rate}</strong>/min · current <strong className="text-white font-mono tracking-tight">{inc.current_rate}</strong>/min
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card border border-[#252940] bg-[#161928]">
-          <div className="font-semibold mb-4 text-white text-sm">Timeline</div>
-          <ol className="space-y-4">
-            {inc.timeline.map((t) => (
-              <li key={t.id} className="flex gap-3.5 text-xs text-white/80">
-                <span className="shrink-0 mt-0.5">{TIMELINE_ICON[t.kind] ?? <Circle className="w-4 h-4 text-white/30" />}</span>
-                <div>
-                  <div className="leading-relaxed">{t.message}</div>
-                  <div className="text-white/30 text-[10px] font-mono tracking-tight mt-0.5">{fmtTime(t.created_at)}</div>
-                </div>
-              </li>
-            ))}
-          </ol>
         </div>
 
-        <div className="card border border-[#252940] bg-[#161928]">
-          <div className="font-semibold mb-4 text-white text-sm">Notification history</div>
-          {inc.notifications.length === 0 ? (
-            <div className="text-white/40 text-xs italic">No notifications sent.</div>
-          ) : (
-            <ul className="space-y-3.5 text-xs">
-              {inc.notifications.map((n) => (
-                <li key={n.id} className="border-t border-[#252940]/60 pt-3 first:border-none first:pt-0">
-                  <div className="flex justify-between items-center">
-                    <span className="badge bg-[#0B0C14] border border-[#252940] text-cyan-400 font-mono text-[9px] uppercase tracking-wider">{n.kind}</span>
-                    <span className="text-white/40 text-[10px] font-mono tracking-tight">{fmtTime(n.created_at)}</span>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Stat label="Events" value={inc.event_count.toLocaleString()} />
+          <Stat label="Spike" value={`${inc.spike_multiplier}×`} tone="text-amber-400" />
+          <Stat label="Notifications" value={inc.notifications_sent} />
+          <Stat label="Noise reduction" value={`${inc.noise_reduction_ratio}%`} tone="text-emerald-400" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg">
+            <div className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Affected services ({inc.affected_services.length})</div>
+            <div className="flex flex-wrap gap-1">
+              {inc.affected_services.map((s) => (
+                <span key={s} className="badge bg-[#09090b] border border-zinc-800/80 text-zinc-300 font-mono text-[10px] tracking-tight py-0.5 px-2 rounded">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg">
+            <div className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Affected instances ({inc.affected_instances.length})</div>
+            <div className="flex flex-wrap gap-1 max-h-24 overflow-auto scrollbar-thin">
+              {inc.affected_instances.map((s) => (
+                <span key={s} className="badge bg-[#09090b] border border-zinc-800/80 text-zinc-300 font-mono text-[10px] tracking-tight py-0.5 px-2 rounded">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg">
+            <div className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Affected regions ({inc.affected_regions.length})</div>
+            <div className="flex flex-wrap gap-1">
+              {inc.affected_regions.map((s) => (
+                <span key={s} className="badge bg-[#09090b] border border-zinc-800/80 text-zinc-300 font-mono text-[10px] tracking-tight py-0.5 px-2 rounded">
+                  {s}
+                </span>
+              ))}
+            </div>
+            <div className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mt-3.5 pt-2 border-t border-zinc-800/60 font-mono">
+              baseline <strong className="text-white font-mono tracking-tight">{inc.baseline_rate}</strong>/min · current <strong className="text-white font-mono tracking-tight">{inc.current_rate}</strong>/min
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg">
+            <div className="font-semibold mb-4 text-white text-sm">Timeline</div>
+            <ol className="space-y-4">
+              {inc.timeline.map((t) => (
+                <li key={t.id} className="flex gap-3.5 text-xs text-zinc-300">
+                  <span className="shrink-0 mt-0.5">{TIMELINE_ICON[t.kind] ?? <Circle className="w-4 h-4 text-zinc-500" />}</span>
+                  <div>
+                    <div className="leading-relaxed text-zinc-200">{t.message}</div>
+                    <div className="text-zinc-500 text-[10px] font-mono tracking-tight mt-0.5">{fmtTime(t.created_at)}</div>
                   </div>
-                  <div className="text-white/70 mt-1.5 leading-relaxed">{n.message}</div>
                 </li>
               ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      <div className="card border border-[#252940] bg-[#161928] mt-6">
-        <div className="flex items-center justify-between">
-          <div className="font-semibold text-white text-sm">Underlying telemetry</div>
-          {!showEvents && (
-            <button className="btn-ghost flex items-center gap-1.5 text-xs" onClick={loadEvents}>
-              <span>Investigate raw events</span>
-              <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
-            </button>
-          )}
-        </div>
-        {showEvents && (
-          loadingEvents ? (
-            <div className="text-white/40 text-sm py-8 text-center">Loading events…</div>
-          ) : events.length === 0 ? (
-            <div className="text-white/40 text-sm py-8 text-center">No raw events found.</div>
-          ) : (
-          <div className="overflow-x-auto mt-4">
-            <table className="w-full text-xs text-left">
-              <thead>
-                <tr className="text-white/40 border-b border-[#252940] text-[10px] uppercase tracking-wider font-mono">
-                  <th className="pb-2">Time</th>
-                  <th className="pb-2">Severity</th>
-                  <th className="pb-2">Service</th>
-                  <th className="pb-2">Message</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((e) => (
-                  <tr key={e.event_id} className="border-b border-[#252940]/40 hover:bg-white/[0.01] transition-all">
-                    <td className="py-2.5 text-white/60 whitespace-nowrap font-mono tracking-tight">{fmtTime(e.timestamp)}</td>
-                    <td className="py-2.5"><SeverityBadge severity={e.severity} /></td>
-                    <td className="text-white/70 py-2.5 font-mono tracking-tight">{e.service ?? "—"}</td>
-                    <td className="text-white/80 py-2.5 font-sans leading-relaxed">{e.message ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            </ol>
           </div>
-          )
-        )}
+
+          <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg">
+            <div className="font-semibold mb-4 text-white text-sm">Notification history</div>
+            {inc.notifications.length === 0 ? (
+              <div className="text-zinc-500 text-xs italic">No notifications sent.</div>
+            ) : (
+              <ul className="space-y-3.5 text-xs">
+                {inc.notifications.map((n) => (
+                  <li key={n.id} className="border-t border-zinc-800/60 pt-3 first:border-none first:pt-0">
+                    <div className="flex justify-between items-center">
+                      <span className="badge bg-[#09090b] border border-zinc-800/80 text-cyan-400 font-mono text-[9px] uppercase tracking-wider py-0.5 px-2 rounded">{n.kind}</span>
+                      <span className="text-zinc-500 text-[10px] font-mono tracking-tight">{fmtTime(n.created_at)}</span>
+                    </div>
+                    <div className="text-zinc-300 mt-1.5 leading-relaxed">{n.message}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <div className="card border border-zinc-800/80 bg-[#121215] p-5 rounded-xl shadow-lg mt-6">
+          <div className="flex items-center justify-between">
+            <div className="font-semibold text-white text-sm">Underlying telemetry</div>
+            {!showEvents && (
+              <button className="btn-ghost flex items-center gap-1.5 text-xs hover:text-white text-zinc-400 transition" onClick={loadEvents}>
+                <span>Investigate raw events</span>
+                <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+              </button>
+            )}
+          </div>
+          {showEvents && (
+            loadingEvents ? (
+              <div className="text-zinc-550 text-sm py-8 text-center">Loading events…</div>
+            ) : events.length === 0 ? (
+              <div className="text-zinc-550 text-sm py-8 text-center">No raw events found.</div>
+            ) : (
+              <div className="overflow-x-auto mt-4">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="text-zinc-500 border-b border-zinc-800 text-[10px] uppercase tracking-wider font-mono">
+                      <th className="pb-2">Time</th>
+                      <th className="pb-2">Severity</th>
+                      <th className="pb-2">Service</th>
+                      <th className="pb-2">Message</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((e) => (
+                      <tr key={e.event_id} className="border-b border-zinc-800/40 hover:bg-white/[0.01] transition-all">
+                        <td className="py-2.5 text-zinc-400 whitespace-nowrap font-mono tracking-tight">{fmtTime(e.timestamp)}</td>
+                        <td className="py-2.5"><SeverityBadge severity={e.severity} /></td>
+                        <td className="text-zinc-300 py-2.5 font-mono tracking-tight">{e.service ?? "—"}</td>
+                        <td className="text-zinc-200 py-2.5 font-sans leading-relaxed">{e.message ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

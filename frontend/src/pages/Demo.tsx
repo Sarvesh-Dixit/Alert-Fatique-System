@@ -1,15 +1,12 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { api, type DemoScenario, type NoiseReductionKPIs, type CooldownState } from "../api/client";
+import { api, type DemoScenario } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useTelemetryInjection } from "../context/TelemetryToastContext";
-import { useIncidentStream } from "../hooks/useIncidentStream";
 import { SeverityBadge } from "../ui";
 import { 
   Play, 
   Terminal, 
-  Sliders, 
-  Activity, 
   Sparkles,
   Database,
   Layers,
@@ -17,8 +14,6 @@ import {
   TrendingDown
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import NoiseReductionBanner from "../components/NoiseReductionBanner";
-import CooldownMatrix from "../components/CooldownMatrix";
 
 interface SimIncident {
   id: string;
@@ -51,37 +46,15 @@ export default function Demo() {
   const [busy, setBusy] = useState("");
   const [result, setResult] = useState<SimResult | null>(null);
   
-  const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
-  const [cooldowns, setCooldowns] = useState<CooldownState[]>([]);
   const { toast, isInjecting, triggerTelemetryInjection } = useTelemetryInjection();
   
   const [logs, setLogs] = useState<string[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
-  const isFetchingRef = useRef(false);
-
-  const loadFeedData = useCallback(async () => {
-    if (!currentOrg) return;
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
-    try {
-      const feedData = await api.get<any>(`/organizations/${currentOrg.id}/dashboard-feed`);
-      setKpis(feedData?.kpis ?? null);
-      setCooldowns(feedData?.cooldown_matrix ?? []);
-    } catch (err) {
-      console.error("Failed to load feed stats in Demo", err);
-    } finally {
-      isFetchingRef.current = false;
-    }
-  }, [currentOrg]);
 
   useEffect(() => {
     if (!currentOrg) return;
     api.get<DemoScenario[]>(`/organizations/${currentOrg.id}/demo/scenarios`).then(setScenarios);
-    loadFeedData();
-  }, [currentOrg, loadFeedData]);
-
-  // Connect to incident stream for real-time live updates
-  useIncidentStream(currentOrg?.id, loadFeedData);
+  }, [currentOrg]);
 
   // Live timer ticks for terminal
   useEffect(() => {
@@ -146,7 +119,6 @@ export default function Demo() {
           { pattern: scenario, sync: true }
         );
         setResult(res);
-        await loadFeedData();
       } catch (err) {
         console.error("Failed to load diagnostic report", err);
       }
@@ -173,227 +145,231 @@ export default function Demo() {
     if (line.startsWith("[INIT]")) {
       return (
         <div key={line}>
-          <span className="text-slate-500 mr-2">{timeStr}</span>
-          <span className="text-cyan-400 font-bold mr-1.5">[INIT]</span>
-          <span className="text-slate-300">{line.replace("[INIT]", "")}</span>
+          <span className="text-zinc-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5 font-mono">[INIT]</span>
+          <span className="text-zinc-300">{line.replace("[INIT]", "")}</span>
         </div>
       );
     }
     if (line.startsWith("[STREAM]")) {
       return (
         <div key={line}>
-          <span className="text-slate-500 mr-2">{timeStr}</span>
-          <span className="text-emerald-400 font-bold mr-1.5">[STREAM]</span>
-          <span className="text-slate-300">{line.replace("[STREAM]", "")}</span>
+          <span className="text-zinc-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5 font-mono">[STREAM]</span>
+          <span className="text-zinc-300">{line.replace("[STREAM]", "")}</span>
         </div>
       );
     }
     if (line.startsWith("[WARN]")) {
       return (
         <div key={line}>
-          <span className="text-slate-500 mr-2">{timeStr}</span>
-          <span className="text-amber-400 font-bold mr-1.5">[WARN]</span>
-          <span className="text-slate-300">{line.replace("[WARN]", "")}</span>
+          <span className="text-zinc-500 mr-2">{timeStr}</span>
+          <span className="text-amber-400 font-bold mr-1.5 font-mono">[WARN]</span>
+          <span className="text-zinc-300">{line.replace("[WARN]", "")}</span>
         </div>
       );
     }
     if (line.startsWith("[DONE]")) {
       return (
         <div key={line}>
-          <span className="text-slate-500 mr-2">{timeStr}</span>
-          <span className="text-emerald-400 font-bold mr-1.5">[DONE] ✔</span>
-          <span className="text-slate-200 font-semibold">{line.replace("[DONE]", "").replace("✔", "")}</span>
+          <span className="text-zinc-500 mr-2">{timeStr}</span>
+          <span className="text-emerald-400 font-bold mr-1.5 font-mono">[DONE] ✔</span>
+          <span className="text-zinc-200 font-semibold">{line.replace("[DONE]", "").replace("✔", "")}</span>
         </div>
       );
     }
     if (line.startsWith("[EMBED]")) {
       return (
         <div key={line}>
-          <span className="text-slate-500 mr-2">{timeStr}</span>
-          <span className="text-cyan-400 font-bold mr-1.5">[EMBED]</span>
-          <span className="text-slate-300">{line.replace("[EMBED]", "")}</span>
+          <span className="text-zinc-500 mr-2">{timeStr}</span>
+          <span className="text-cyan-400 font-bold mr-1.5 font-mono">[EMBED]</span>
+          <span className="text-zinc-300">{line.replace("[EMBED]", "")}</span>
         </div>
       );
     }
-    return <div key={line} className="text-slate-400">{line}</div>;
+    return <div key={line} className="text-zinc-400">{line}</div>;
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6 font-sans">
-      {/* Standard Header */}
-      <PageHeader 
-        title="Demo Simulator Control Center" 
-        badge="SIMULATOR" 
-        description="Inject heavy telemetry traffic scenarios into the ingestion gateway to validate semantic clustering and cooldown suppresses."
-      />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+        {/* Page Header */}
+        <PageHeader 
+          title="Demo Simulator Control Center" 
+          badge="SIMULATOR" 
+          description="Inject heavy telemetry traffic scenarios into the ingestion gateway to validate semantic clustering and cooldown suppresses."
+        />
 
-      {/* Embedded Core Anchors for Immediate Feedback */}
-      <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} />
-      <CooldownMatrix cooldowns={cooldowns} />
-
-      {/* Simulator Workspace controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Scenario selection & configuration */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Rate config */}
-          <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-1.5 font-mono">
-              <Terminal className="w-4 h-4 text-cyan-400" />
-              <span>Ingestion Rate Controller</span>
-            </h2>
+        {/* 2-Column Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Config, Scenarios, and Terminal Logs */}
+          <div className="lg:col-span-8 space-y-6">
             
-            <div className="flex flex-col sm:flex-row sm:items-end gap-6">
-              <div className="w-full sm:w-64">
-                <label className="label text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Events to Ingest</label>
-                <div className="relative mt-1">
-                  <input
-                    type="number"
-                    className="input pl-3 pr-12 bg-[#09090b] border border-zinc-800 focus:border-[#A3E635]/65 font-mono tracking-tight text-white"
-                    value={count}
-                    min={10}
-                    max={50}
-                    onChange={(e) => setCount(Number(e.target.value))}
-                  />
-                  <span className="absolute right-3 top-2 font-mono text-[10px] text-zinc-500 uppercase">logs</span>
-                </div>
-              </div>
-              
-              <div className="flex-1 flex flex-col gap-1 text-[11px] text-zinc-400 pb-1 leading-normal font-sans">
-                <div>
-                  • Traffic is distributed across <strong className="text-zinc-200">3 simulated microservices</strong>.
-                </div>
-                <div>
-                  • Recommended scale: <strong className="text-zinc-200">30 to 50 logs</strong> to verify cooldown suppression without pipeline overhead.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Scenario Grid */}
-          <div className="space-y-3.5">
-            <h2 className="text-xs font-bold text-white/60 uppercase tracking-wider">Available Simulation Scenarios</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {scenarios.map((s) => {
-                const isBusy = busy === s.id;
-                return (
-                  <div 
-                    key={s.id} 
-                    className="card bg-[#121215] border border-zinc-800 hover:border-zinc-600 hover:bg-[#18181b] rounded-xl flex flex-col justify-between shadow-lg transition duration-200"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        {getScenarioIcon(s.id)}
-                        <h3 className="font-semibold text-white text-xs sm:text-sm capitalize">{s.id.replace(/-/g, " ")}</h3>
-                      </div>
-                      <p className="text-zinc-400 text-[11.5px] leading-relaxed min-h-[48px]">{s.description}</p>
-                    </div>
-                    
-                    <button 
-                      className="w-full mt-4 px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 hover:bg-[#18181b] text-emerald-400 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5" 
-                      disabled={!!busy} 
-                      onClick={() => run(s.id)}
-                    >
-                      <Play className="w-3 h-3 fill-emerald-400/20 shrink-0" />
-                      <span>{isBusy ? "Injecting..." : "Inject Scenario"}</span>
-                    </button>
+            {/* Top Ingestion Config & Status Bar */}
+            <div className="bg-[#121215] border border-zinc-800/80 rounded-xl p-5 shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                {/* Left: Event Count Input */}
+                <div className="md:col-span-4 flex items-center gap-3">
+                  <label className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-400">
+                    Events to Ingest
+                  </label>
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      className="w-full bg-[#18181b] border border-zinc-700 rounded-lg px-3 py-2 text-sm font-mono text-zinc-100 focus:outline-none focus:border-emerald-500"
+                      value={count}
+                      onChange={(e) => setCount(Number(e.target.value))}
+                      min={10}
+                      max={50}
+                    />
+                    <span className="absolute right-3 top-2 text-xs font-mono text-zinc-500">LOGS</span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
 
-          {/* Terminal log output */}
-          {logs.length > 0 && (
-            <div className="bg-black border border-zinc-800 rounded-xl font-mono text-xs text-zinc-300 p-4 shadow-2xl flex flex-col gap-2">
-              <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
-                <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
-                {isInjecting && (
-                  <span className="text-cyan-400 font-bold animate-pulse font-mono">
-                    [Processed: {processedCount} / {count} events]
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto font-mono">
-                {logs.map((log) => formatLogLine(log))}
-                
-                {isInjecting && processedCount < count && (
-                  <div className="text-emerald-400 font-bold animate-pulse font-mono">
-                    &gt;&gt; [STREAM] Processed: {processedCount} / {count} events...
-                  </div>
-                )}
+                {/* Right: Scale & Microservice Info */}
+                <div className="md:col-span-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-zinc-400 border-t md:border-t-0 md:border-l border-zinc-800 md:pl-6">
+                  <ul className="space-y-1">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      Traffic distributed across <strong className="text-zinc-200">3 simulated microservices</strong>.
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      Recommended scale: <strong className="text-zinc-200">30 to 50 logs</strong> for real-time cooldown evaluation.
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Results Diagnostic Card on the right */}
-        <div className="lg:col-span-4">
-          {result ? (
-            <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-5 animate-fade-in space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div>
-                  <h2 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-[#A3E635] animate-pulse" />
-                    <span>Diagnostic Report</span>
-                  </h2>
-                  <p className="text-[9px] text-zinc-500 font-mono mt-0.5 capitalize">Scenario: {result.scenario}</p>
-                </div>
-                
-                <span className="text-[9px] text-emerald-400 font-mono font-extrabold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">SSE Synced</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2.5 text-center">
-                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Logs Ingested</div>
-                  <div className="text-sm font-mono font-bold text-white mt-1">{result.events_generated}</div>
-                </div>
-                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Threads Formed</div>
-                  <div className="text-sm font-mono font-bold text-rose-400 mt-1">{result.incidents.length}</div>
-                </div>
-                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Webhooks</div>
-                  <div className="text-sm font-mono font-bold text-amber-400 mt-1">{result.notifications_sent}</div>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <h3 className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">Correlated Output</h3>
-                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                  {result.incidents.map((i) => (
-                    <Link 
-                      key={i.id} 
-                      to={`/incidents/${i.id}`} 
-                      className="block border border-zinc-800 hover:border-zinc-700 bg-[#09090b]/40 rounded-xl p-3.5 transition duration-200 text-left"
+            {/* Scenario Grid */}
+            <div className="space-y-3">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                Available Simulation Scenarios
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {scenarios.map((s) => {
+                  const isBusy = busy === s.id;
+                  return (
+                    <div 
+                      key={s.id} 
+                      className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[190px] transition-all duration-200"
                     >
-                      <div className="flex items-center justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <SeverityBadge severity={i.severity} />
-                          <span className="font-semibold text-white truncate text-xs">{i.title}</span>
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          {getScenarioIcon(s.id)}
+                          <h3 className="font-semibold text-white text-xs sm:text-sm capitalize">{s.id.replace(/-/g, " ")}</h3>
                         </div>
-                        <span className="text-[9px] text-zinc-500 font-mono shrink-0">#{i.id.slice(-6)}</span>
+                        <p className="text-zinc-400 text-[11.5px] leading-relaxed line-clamp-3">{s.description}</p>
                       </div>
                       
-                      <div className="text-zinc-400 text-[10px] flex flex-wrap gap-x-3 gap-y-1 font-mono tracking-tight">
-                        <span className="text-[#A3E635] font-bold">-{i.events_suppressed} suppressed</span>
-                        <span>{i.affected_services} services</span>
-                        {i.spike_multiplier > 1 && <span className="text-amber-400 font-bold">{i.spike_multiplier}x spike</span>}
-                        <span className="text-[#A3E635] flex items-center gap-0.5">
-                          <TrendingDown className="w-3 h-3" />
-                          <span>{i.noise_reduction_ratio}% reduction</span>
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                      <button 
+                        className="w-full py-2.5 px-4 bg-[#18181b] hover:bg-zinc-800 text-emerald-400 hover:text-emerald-300 border border-zinc-800 hover:border-zinc-700 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer" 
+                        disabled={!!busy} 
+                        onClick={() => run(s.id)}
+                      >
+                        <Play className="w-3 h-3 fill-emerald-400/20 shrink-0" />
+                        <span>{isBusy ? "Injecting..." : "Inject Scenario"}</span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500 text-xs italic">
-              Diagnostic report will generate here when scenario runs...
-            </div>
-          )}
+
+            {/* Live SRE Terminal Window */}
+            {logs.length > 0 && (
+              <div className="w-full bg-[#000000] border border-zinc-800 rounded-xl p-4 font-mono text-xs text-zinc-300 shadow-2xl flex flex-col gap-2 overflow-x-hidden">
+                <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
+                  <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
+                  {isInjecting && (
+                    <span className="text-cyan-400 font-bold animate-pulse font-mono">
+                      [Processed: {processedCount} / {count} events]
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto font-mono">
+                  {logs.map((log) => formatLogLine(log))}
+                  
+                  {isInjecting && processedCount < count && (
+                    <div className="text-emerald-400 font-bold animate-pulse font-mono">
+                      &gt;&gt; [STREAM] Processed: {processedCount} / {count} events...
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Results Diagnostic Card on the right */}
+          <div className="lg:col-span-4">
+            {result ? (
+              <div className="card bg-[#121215] border border-zinc-800/80 rounded-xl p-5 animate-fade-in space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <div>
+                    <h2 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-[#A3E635] animate-pulse" />
+                      <span>Diagnostic Report</span>
+                    </h2>
+                    <p className="text-[9px] text-zinc-500 font-mono mt-0.5 capitalize">Scenario: {result.scenario}</p>
+                  </div>
+                  
+                  <span className="text-[9px] text-emerald-400 font-mono font-extrabold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">SSE Synced</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2.5 text-center">
+                  <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800/80 rounded-xl">
+                    <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Logs Ingested</div>
+                    <div className="text-sm font-mono font-bold text-white mt-1">{result.events_generated}</div>
+                  </div>
+                  <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800/80 rounded-xl">
+                    <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Threads Formed</div>
+                    <div className="text-sm font-mono font-bold text-rose-400 mt-1">{result.incidents.length}</div>
+                  </div>
+                  <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800/80 rounded-xl">
+                    <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Webhooks</div>
+                    <div className="text-sm font-mono font-bold text-amber-400 mt-1">{result.notifications_sent}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <h3 className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">Correlated Output</h3>
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {result.incidents.map((i) => (
+                      <Link 
+                        key={i.id} 
+                        to={`/incidents/${i.id}`} 
+                        className="block border border-zinc-800/80 hover:border-zinc-700 bg-[#09090b]/40 rounded-xl p-3.5 transition duration-200 text-left"
+                      >
+                        <div className="flex items-center justify-between gap-4 mb-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <SeverityBadge severity={i.severity} />
+                            <span className="font-semibold text-white truncate text-xs">{i.title}</span>
+                          </div>
+                          <span className="text-[9px] text-zinc-500 font-mono shrink-0">#{i.id.slice(-6)}</span>
+                        </div>
+                        
+                        <div className="text-zinc-400 text-[10px] flex flex-wrap gap-x-3 gap-y-1 font-mono tracking-tight">
+                          <span className="text-[#A3E635] font-bold">-{i.events_suppressed} suppressed</span>
+                          <span>{i.affected_services} services</span>
+                          {i.spike_multiplier > 1 && <span className="text-amber-400 font-bold">{i.spike_multiplier}x spike</span>}
+                          <span className="text-[#A3E635] flex items-center gap-0.5">
+                            <TrendingDown className="w-3 h-3" />
+                            <span>{i.noise_reduction_ratio}% reduction</span>
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="card bg-[#121215] border border-zinc-800/80 rounded-xl p-8 text-center text-zinc-500 text-xs italic">
+                Diagnostic report will generate here when scenario runs...
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

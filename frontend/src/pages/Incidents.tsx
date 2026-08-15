@@ -87,35 +87,37 @@ export default function Incidents() {
   );
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6 font-sans">
-      {/* Page Header with filters */}
-      <PageHeader 
-        title="Incidents Feed" 
-        badge="OPERATIONAL" 
-        actions={filtersAction}
-        description="Browse logical error threads grouped from raw telemetry bursts by the semantic pipeline."
-      />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+        {/* Page Header with filters */}
+        <PageHeader 
+          title="Incidents Feed" 
+          badge="OPERATIONAL" 
+          actions={filtersAction}
+          description="Browse logical error threads grouped from raw telemetry bursts by the semantic pipeline."
+        />
 
-      {/* Main Content Area */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-2">
-          <h3 className="text-white font-bold text-xs uppercase tracking-wider">
-            Correlated Incidents Feed
-          </h3>
-          <span className="text-[10px] bg-zinc-800 text-zinc-300 font-mono px-2 py-0.5 rounded-full font-bold">
-            {incidents.length} shown
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="text-zinc-500 text-xs py-16 text-center italic">
-            Synchronizing incidents feed...
+        {/* Main Content Area */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-2">
+            <h3 className="text-white font-bold text-xs uppercase tracking-wider">
+              Correlated Incidents Feed
+            </h3>
+            <span className="text-[10px] bg-zinc-800 text-zinc-300 font-mono px-2 py-0.5 rounded-full font-bold">
+              {incidents.length} shown
+            </span>
           </div>
-        ) : incidents.length === 0 ? (
-          <EmptyState>No incidents match the selected filters. Use the Demo Simulator to trigger telemetry traffic.</EmptyState>
-        ) : (
-          <IncidentFeed incidents={incidents} />
-        )}
+
+          {loading ? (
+            <div className="text-zinc-500 text-xs py-16 text-center italic">
+              Synchronizing incidents feed...
+            </div>
+          ) : incidents.length === 0 ? (
+            <EmptyState>No incidents match the selected filters. Use the Demo Simulator to trigger telemetry traffic.</EmptyState>
+          ) : (
+            <IncidentFeed incidents={incidents} />
+          )}
+        </div>
       </div>
     </div>
   );
