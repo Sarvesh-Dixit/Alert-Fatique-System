@@ -97,11 +97,11 @@ export function TelemetryToastProvider({ children }: { children: React.ReactNode
   const getToastStyle = (type: "loading" | "success" | "error") => {
     switch (type) {
       case "loading":
-        return "bg-slate-900 border-cyan-500/40 text-cyan-200";
+        return "bg-[#121215]/95 backdrop-blur-md border-cyan-500/30 text-cyan-200";
       case "success":
-        return "bg-slate-900 border-emerald-500/40 text-emerald-200";
+        return "bg-[#121215]/95 backdrop-blur-md border-emerald-500/30 text-emerald-200";
       case "error":
-        return "bg-slate-900 border-rose-500/40 text-rose-200";
+        return "bg-[#121215]/95 backdrop-blur-md border-rose-500/30 text-rose-200";
     }
   };
 
