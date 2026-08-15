@@ -8,13 +8,15 @@ interface NoiseReductionBannerProps {
   hasActiveCooldowns?: boolean;
   range?: "TODAY" | "24H" | "7D";
   setRange?: (range: "TODAY" | "24H" | "7D") => void;
+  loading?: boolean;
 }
 
 export default function NoiseReductionBanner({ 
   kpis, 
   hasActiveCooldowns = false,
   range = "24H",
-  setRange
+  setRange,
+  loading = false
 }: NoiseReductionBannerProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -68,25 +70,26 @@ export default function NoiseReductionBanner({
   }, [range, noiseReductionRatio]);
 
   return (
-    <div className="relative overflow-hidden bg-[#121215] border border-zinc-800/80 rounded-2xl p-5 backdrop-blur-md shadow-2xl transition hover:border-zinc-700">
-      {/* Visual background gradient pulse */}
-      <div className="absolute -top-24 -left-24 w-[300px] h-[300px] rounded-full pointer-events-none bg-gradient-to-tr from-[#A3E635]/5 to-transparent blur-3xl" />
-      <div className="absolute -bottom-24 -right-24 w-[300px] h-[300px] rounded-full pointer-events-none bg-gradient-to-bl from-[#38BDF8]/5 to-transparent blur-3xl" />
+    <div className="relative font-sans">
+      {/* Decorative Grid Lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f23_1px,transparent_1px),linear-gradient(to_bottom,#1f1f23_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-35" />
 
-      {/* Info Badge / Tooltip Row */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-zinc-800/80 pb-3 relative z-10">
-        <div className="flex items-center gap-2">
-          {hasActiveCooldowns ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              COOLDOWN ENGAGED
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider shadow-[0_0_12px_rgba(16,185,129,0.15)]">
-              <span className="live-dot" />
-              REAL-TIME MONITORING
-            </span>
-          )}
+      {/* Judgment Level Alerts & Trigger Indicators */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800/80 pb-4 mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-mono font-bold tracking-wider uppercase select-none ${
+            hasActiveCooldowns
+              ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+              : "bg-emerald-500/10 text-[#A3E635] border-emerald-500/20"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${hasActiveCooldowns ? "bg-rose-500 animate-pulse" : "bg-[#A3E635]"}`} />
+            <span>Outage Suppression Matrix: {hasActiveCooldowns ? "Engaged (Rate Limiting)" : "Nominal"}</span>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-850 text-[10px] font-mono text-zinc-400 select-none">
+            <span>Deduplication similarity threshold:</span>
+            <span className="text-[#A3E635] font-extrabold font-mono">≥ 0.88 Cosine</span>
+          </div>
         </div>
 
         {/* Interactive Judge Tooltip Trigger */}
@@ -134,7 +137,7 @@ export default function NoiseReductionBanner({
               Noise Reduction Ratio
             </span>
             <span className="text-[10px] font-mono text-[#A3E635] bg-[#A3E635]/10 px-2 py-0.5 rounded-full font-bold">
-              {noiseReductionRatio.toFixed(1)}% Noise Reduced
+              {loading ? "Evaluating..." : `${noiseReductionRatio.toFixed(1)}% Noise Reduced`}
             </span>
           </div>
 
@@ -143,7 +146,11 @@ export default function NoiseReductionBanner({
             <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 blur-xl opacity-80 pointer-events-none rounded-lg" />
             
             <span className="relative text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-[#A3E635]">
-              {noiseReductionRatio.toFixed(1)}%
+              {loading ? (
+                <span className="animate-pulse bg-zinc-800/80 text-transparent rounded px-6 select-none font-mono">00.0%</span>
+              ) : (
+                `${noiseReductionRatio.toFixed(1)}%`
+              )}
             </span>
             <div className="relative flex flex-col mb-1 text-[10px] text-zinc-550 font-mono">
               <span className="text-[#A3E635] font-semibold">⚡ Max Efficiency</span>
@@ -175,20 +182,26 @@ export default function NoiseReductionBanner({
             </div>
             
             <div className="h-24 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.3} />
-                  <XAxis dataKey="time" stroke="#71717a" fontSize={8} tickLine={false} />
-                  <YAxis domain={[80, 100]} stroke="#71717a" fontSize={8} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#09090b", borderColor: "#27272a", borderRadius: "8px", fontSize: "10px" }}
-                    itemStyle={{ color: "#A3E635" }}
-                    labelStyle={{ color: "#a1a1aa" }}
-                    formatter={(value: any) => [`${value}% Reduced`]}
-                  />
-                  <Line type="monotone" dataKey="value" stroke="#A3E635" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {loading ? (
+                <div className="h-full w-full bg-zinc-900/30 rounded-xl border border-zinc-850/50 animate-pulse flex items-center justify-center text-[10px] text-zinc-650 font-mono">
+                  Loading trend data...
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.3} />
+                    <XAxis dataKey="time" stroke="#71717a" fontSize={8} tickLine={false} />
+                    <YAxis domain={[80, 100]} stroke="#71717a" fontSize={8} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#09090b", borderColor: "#27272a", borderRadius: "8px", fontSize: "10px" }}
+                      itemStyle={{ color: "#A3E635" }}
+                      labelStyle={{ color: "#a1a1aa" }}
+                      formatter={(value: any) => [`${value}% Reduced`]}
+                    />
+                    <Line type="monotone" dataKey="value" stroke="#A3E635" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </div>
@@ -213,14 +226,22 @@ export default function NoiseReductionBanner({
             
             <div className="relative flex items-center gap-3.5 py-1">
               <div className="flex flex-col">
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-zinc-150">{rawEvents}</span>
+                {loading ? (
+                  <span className="animate-pulse bg-zinc-800 text-transparent rounded w-16 h-8 select-none font-mono">000</span>
+                ) : (
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-zinc-150">{rawEvents}</span>
+                )}
                 <span className="text-[9px] font-mono text-zinc-500 uppercase">Raw Ingested</span>
               </div>
               
               <ArrowRight className="w-4 h-4 text-zinc-500 animate-pulse shrink-0" />
               
               <div className="flex flex-col">
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
+                {loading ? (
+                  <span className="animate-pulse bg-zinc-800 text-transparent rounded w-12 h-8 select-none font-mono">00</span>
+                ) : (
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
+                )}
                 <span className="text-[9px] font-mono text-zinc-405 uppercase">Incident Thread{incidentThreads > 1 ? "s" : ""}</span>
               </div>
             </div>
@@ -228,9 +249,13 @@ export default function NoiseReductionBanner({
 
           <div className="text-[10.5px] text-zinc-455 font-sans border-t border-zinc-900/65 pt-1.5 flex items-center justify-between">
             <span>Compression Rate:</span>
-            <strong className="text-zinc-200 font-mono">
-              {rawEvents} Raw Alerts → {incidentThreads} Thread{incidentThreads > 1 ? "s" : ""}
-            </strong>
+            {loading ? (
+              <span className="animate-pulse bg-zinc-800 text-transparent rounded w-24 h-4 select-none">Evaluating...</span>
+            ) : (
+              <strong className="text-zinc-200 font-mono">
+                {rawEvents} Raw Alerts → {incidentThreads} Thread{incidentThreads > 1 ? "s" : ""}
+              </strong>
+            )}
           </div>
         </div>
 
@@ -252,9 +277,13 @@ export default function NoiseReductionBanner({
             {/* Glow backdrop */}
             <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/10 to-orange-500/5 blur-xl opacity-60 pointer-events-none rounded-lg" />
             
-            <span className="relative text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-amber-300">
-              {formatTimeSaved(hoursSaved)}
-            </span>
+            {loading ? (
+              <span className="animate-pulse bg-zinc-800 text-transparent rounded w-24 h-8 select-none font-mono">~00 hours</span>
+            ) : (
+              <span className="relative text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-amber-300">
+                {formatTimeSaved(hoursSaved)}
+              </span>
+            )}
             <p className="relative text-[10.5px] text-zinc-400 mt-0.5 leading-tight">
               Alert triage hours prevented per event burst.
             </p>

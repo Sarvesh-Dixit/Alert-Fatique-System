@@ -23,6 +23,7 @@ import PageHeader from "../components/PageHeader";
 import NoiseReductionBanner from "../components/NoiseReductionBanner";
 import CooldownMatrix from "../components/CooldownMatrix";
 import IncidentFeed from "../components/IncidentFeed";
+import TelemetryTerminal from "../components/TelemetryTerminal";
 
 const ACCENT = "#A3E635"; // signature lime
 const CARD = "#121215";
@@ -200,16 +201,50 @@ type Range = "TODAY" | "24H" | "7D";
 
 export default function LiveMonitor() {
   const { currentOrg } = useAuth();
-  const { triggerTelemetryInjection, isInjecting } = useTelemetryInjection();
+  const { triggerTelemetryInjection, isInjecting, addLog } = useTelemetryInjection();
 
   const [kpis, setKpis] = useState<NoiseReductionKPIs | null>(null);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [cooldowns, setCooldowns] = useState<CooldownState[]>([]);
   const [applications, setApplications] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Scoped loading states for progressive hydration
+  const [loadingKPIs, setLoadingKPIs] = useState(true);
+  const [loadingCooldowns, setLoadingCooldowns] = useState(true);
+  const [loadingIncidents, setLoadingIncidents] = useState(true);
+  
   const [range, setRange] = useState<Range>("24H");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isFetchingRef = useRef(false);
+
+  const getCache = <T,>(key: string, fallback: T): T => {
+    try {
+      const cached = localStorage.getItem(key);
+      return cached ? JSON.parse(cached) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  // Instant Stage (<50ms): Hydrate from local cache immediately on mount or org switch
+  useEffect(() => {
+    if (!currentOrg) return;
+    const cachedKpis = getCache<NoiseReductionKPIs | null>(`cache:${currentOrg.id}:kpis`, null);
+    const cachedIncidents = getCache<Incident[]>(`cache:${currentOrg.id}:incidents`, []);
+    const cachedCooldowns = getCache<CooldownState[]>(`cache:${currentOrg.id}:cooldown_matrix`, []);
+    const cachedApps = getCache<{ id: string; name: string }[]>(`cache:${currentOrg.id}:applications`, []);
+
+    setKpis(cachedKpis);
+    setIncidents(cachedIncidents);
+    setCooldowns(cachedCooldowns);
+    setApplications(cachedApps);
+
+    // If cache is present, set initial loading to false to prevent layout shift
+    if (cachedKpis) setLoadingKPIs(false);
+    if (cachedCooldowns.length > 0) setLoadingCooldowns(false);
+    if (cachedIncidents.length > 0) setLoadingIncidents(false);
+  }, [currentOrg]);
 
   const handleInject = async (scenario: string) => {
     if (!currentOrg) return;
@@ -274,19 +309,61 @@ export default function LiveMonitor() {
     if (!currentOrg) return;
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
+
     try {
-      const data = await api.get<{
-        kpis: NoiseReductionKPIs;
-        cooldown_matrix: CooldownState[];
-        incidents: Incident[];
-        applications: { id: string; name: string }[];
-      }>(`/organizations/${currentOrg.id}/dashboard-feed`);
-      setKpis(data.kpis);
-      setIncidents(data.incidents ?? []);
-      setCooldowns(data.cooldown_matrix ?? []);
-      setApplications(data.applications ?? []);
+      // Chunk 1 (<200ms): Eagerly fetch KPIs
+      setLoadingKPIs(true);
+      const kpiPromise = api.get<NoiseReductionKPIs>(`/organizations/${currentOrg.id}/kpis`)
+        .then((data) => {
+          setKpis(data);
+          localStorage.setItem(`cache:${currentOrg.id}:kpis`, JSON.stringify(data));
+          setLoadingKPIs(false);
+        })
+        .catch((err) => {
+          console.error("Progressive load KPIs failed", err);
+          setLoadingKPIs(false);
+        });
+
+      // Chunk 2 (<350ms): Fetch Automated Cooldown Matrix
+      const cooldownPromise = new Promise((resolve) => setTimeout(resolve, 150))
+        .then(() => {
+          setLoadingCooldowns(true);
+          return api.get<CooldownState[]>(`/organizations/${currentOrg.id}/cooldown-matrix`);
+        })
+        .then((data) => {
+          setCooldowns(data);
+          localStorage.setItem(`cache:${currentOrg.id}:cooldown_matrix`, JSON.stringify(data));
+          setLoadingCooldowns(false);
+        })
+        .catch((err) => {
+          console.error("Progressive load cooldowns failed", err);
+          setLoadingCooldowns(false);
+        });
+
+      // Chunk 3 (Eager / Streamed): Fetch Active Incidents & Microservices
+      const incidentsPromise = new Promise((resolve) => setTimeout(resolve, 300))
+        .then(() => {
+          setLoadingIncidents(true);
+          return Promise.all([
+            api.get<Incident[]>(`/organizations/${currentOrg.id}/incidents?limit=8`),
+            api.get<{ id: string; name: string }[]>(`/organizations/${currentOrg.id}/applications`)
+          ]);
+        })
+        .then(([incidentsData, appsData]) => {
+          setIncidents(incidentsData);
+          setApplications(appsData);
+          localStorage.setItem(`cache:${currentOrg.id}:incidents`, JSON.stringify(incidentsData));
+          localStorage.setItem(`cache:${currentOrg.id}:applications`, JSON.stringify(appsData));
+          setLoadingIncidents(false);
+        })
+        .catch((err) => {
+          console.error("Progressive load incidents failed", err);
+          setLoadingIncidents(false);
+        });
+
+      await Promise.all([kpiPromise, cooldownPromise, incidentsPromise]);
     } catch (err) {
-      console.error("LiveMonitor load failed", err);
+      console.error("Progressive loading pipeline failed", err);
     } finally {
       isFetchingRef.current = false;
       setLoading(false);
@@ -298,7 +375,23 @@ export default function LiveMonitor() {
     load();
   }, [load]);
 
-  useIncidentStream(currentOrg?.id, () => { void load(); }, {});
+  useIncidentStream(
+    currentOrg?.id, 
+    () => { void load(); }, 
+    {
+      onEvent: (ev) => {
+        if (ev.type === "incident_updated" && ev.data) {
+          addLog(`[STREAM] Real-time Correlation: Consolidated thread active for service ${ev.data.service || "global"} (severity: ${ev.data.severity || "HIGH"}, raw alerts grouped: ${ev.data.event_count})`);
+        } else if (ev.type === "cooldown_update" && ev.data) {
+          if (ev.data.status === "ACTIVE_SUPPRESSION") {
+            addLog(`[SUPPRESS] Cooldown Active: Suppressing burst telemetry on service ${ev.data.service} (suppressed: ${ev.data.suppressed_count})`);
+          } else {
+            addLog(`[STREAM] Cooldown Expired: Ingestion window reset for service ${ev.data.service}`);
+          }
+        }
+      }
+    }
+  );
 
   // Pick highlighted incident (user selection wins, otherwise the top severity)
   const highlighted = useMemo(() => {
@@ -411,11 +504,20 @@ export default function LiveMonitor() {
         </div>
       </div>
 
+      {/* Real-time Ingestion Logs Terminal */}
+      <TelemetryTerminal />
+
       {/* Core Visual Anchor 1: Executive Noise Reduction Ratio Panel */}
-      <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} range={range} setRange={setRange} />
+      <NoiseReductionBanner 
+        kpis={kpis} 
+        hasActiveCooldowns={cooldowns.some(c => c.remaining_seconds > 0)} 
+        range={range} 
+        setRange={setRange} 
+        loading={loadingKPIs} 
+      />
 
       {/* Core Visual Anchor 2: Automated Cooldown Matrix */}
-      <CooldownMatrix cooldowns={cooldowns} />
+      <CooldownMatrix cooldowns={cooldowns} loading={loadingCooldowns} />
 
       {/* Operations Grid: Incident Feed on Left, Focus Inspector on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -437,6 +539,7 @@ export default function LiveMonitor() {
             incidents={incidents} 
             selectedId={highlighted?.id} 
             onSelect={setSelectedId} 
+            loading={loadingIncidents}
           />
         </div>
 

@@ -14,6 +14,7 @@ import {
   TrendingDown
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
+import TelemetryTerminal from "../components/TelemetryTerminal";
 
 interface SimIncident {
   id: string;
@@ -46,66 +47,12 @@ export default function Demo() {
   const [busy, setBusy] = useState("");
   const [result, setResult] = useState<SimResult | null>(null);
   
-  const { toast, isInjecting, triggerTelemetryInjection } = useTelemetryInjection();
+  const { triggerTelemetryInjection } = useTelemetryInjection();
   
-  const [logs, setLogs] = useState<string[]>([]);
-  const [processedCount, setProcessedCount] = useState(0);
-
   useEffect(() => {
     if (!currentOrg) return;
     api.get<DemoScenario[]>(`/organizations/${currentOrg.id}/demo/scenarios`).then(setScenarios);
   }, [currentOrg]);
-
-  // Live timer ticks for terminal
-  useEffect(() => {
-    let interval: ReturnType<typeof setTimeout>;
-    if (isInjecting) {
-      setProcessedCount(0);
-      interval = setInterval(() => {
-        setProcessedCount((prev) => {
-          if (prev >= count) {
-            clearInterval(interval);
-            return count;
-          }
-          return prev + 1;
-        });
-      }, 75); // ~2.2 seconds to reach 30
-    } else {
-      setProcessedCount(count);
-    }
-    return () => clearInterval(interval);
-  }, [isInjecting, count]);
-
-  useEffect(() => {
-    if (!toast) return;
-
-    if (toast.type === "loading") {
-      if (toast.message.startsWith("Injecting Telemetry")) {
-        const scenarioName = toast.message.replace("Injecting Telemetry: ", "").toLowerCase();
-        setLogs([
-          `[INIT] Initiating telemetry injection pipeline: ${scenarioName}...`,
-          `[STREAM] Connecting to Ingestion Highway gateway...`
-        ]);
-      } else if (toast.message === "Telemetry Highway Ingestion Active") {
-        setLogs((prev) => [
-          ...prev,
-          `[STREAM] Telemetry Highway Ingestion Active: dispatching raw burst stream`,
-        ]);
-      }
-    } else if (toast.type === "success") {
-      setLogs((prev) => [
-        ...prev.filter(l => !l.includes("[STREAM] Processed:")),
-        `[STREAM] Telemetry Ingestion: Streamed ${count}/${count} raw events successfully`,
-        `[EMBED] Vector Embedding Engine: Computed ${count} trace embeddings (cosine similarity checks)`,
-        `[DONE] ✔ Simulation completed. pipeline synchronized to Real-Time SSE channel.`
-      ]);
-    } else if (toast.type === "error") {
-      setLogs((prev) => [
-        ...prev,
-        `[WARN] Ingestion failure alert: ${toast.sub}`
-      ]);
-    }
-  }, [toast, count]);
 
   async function run(scenario: string) {
     if (!currentOrg) return;
@@ -138,56 +85,6 @@ export default function Demo() {
       return <Database className={`w-5 h-5 ${colorClass}`} />;
     }
     return <Zap className={`w-5 h-5 ${colorClass}`} />;
-  };
-
-  const formatLogLine = (line: string) => {
-    const timeStr = `[${new Date().toLocaleTimeString()}]`;
-    if (line.startsWith("[INIT]")) {
-      return (
-        <div key={line}>
-          <span className="text-zinc-500 mr-2">{timeStr}</span>
-          <span className="text-cyan-400 font-bold mr-1.5 font-mono">[INIT]</span>
-          <span className="text-zinc-300">{line.replace("[INIT]", "")}</span>
-        </div>
-      );
-    }
-    if (line.startsWith("[STREAM]")) {
-      return (
-        <div key={line}>
-          <span className="text-zinc-500 mr-2">{timeStr}</span>
-          <span className="text-emerald-400 font-bold mr-1.5 font-mono">[STREAM]</span>
-          <span className="text-zinc-300">{line.replace("[STREAM]", "")}</span>
-        </div>
-      );
-    }
-    if (line.startsWith("[WARN]")) {
-      return (
-        <div key={line}>
-          <span className="text-zinc-500 mr-2">{timeStr}</span>
-          <span className="text-amber-400 font-bold mr-1.5 font-mono">[WARN]</span>
-          <span className="text-zinc-300">{line.replace("[WARN]", "")}</span>
-        </div>
-      );
-    }
-    if (line.startsWith("[DONE]")) {
-      return (
-        <div key={line}>
-          <span className="text-zinc-500 mr-2">{timeStr}</span>
-          <span className="text-emerald-400 font-bold mr-1.5 font-mono">[DONE] ✔</span>
-          <span className="text-zinc-200 font-semibold">{line.replace("[DONE]", "").replace("✔", "")}</span>
-        </div>
-      );
-    }
-    if (line.startsWith("[EMBED]")) {
-      return (
-        <div key={line}>
-          <span className="text-zinc-500 mr-2">{timeStr}</span>
-          <span className="text-cyan-400 font-bold mr-1.5 font-mono">[EMBED]</span>
-          <span className="text-zinc-300">{line.replace("[EMBED]", "")}</span>
-        </div>
-      );
-    }
-    return <div key={line} className="text-zinc-400">{line}</div>;
   };
 
   return (
@@ -278,28 +175,7 @@ export default function Demo() {
             </div>
 
             {/* Live SRE Terminal Window */}
-            {logs.length > 0 && (
-              <div className="w-full max-w-full overflow-x-auto font-mono text-xs whitespace-pre-wrap sm:whitespace-pre bg-[#000000] border border-zinc-800 rounded-xl p-4 shadow-2xl flex flex-col gap-2">
-                <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
-                  <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
-                  {isInjecting && (
-                    <span className="text-cyan-400 font-bold animate-pulse font-mono">
-                      [Processed: {processedCount} / {count} events]
-                    </span>
-                  )}
-                </div>
-                
-                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto font-mono">
-                  {logs.map((log) => formatLogLine(log))}
-                  
-                  {isInjecting && processedCount < count && (
-                    <div className="text-emerald-400 font-bold animate-pulse font-mono">
-                      &gt;&gt; [STREAM] Processed: {processedCount} / {count} events...
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            <TelemetryTerminal />
           </div>
 
           {/* Results Diagnostic Card on the right */}
