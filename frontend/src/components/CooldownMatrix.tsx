@@ -10,6 +10,7 @@ import {
 
 interface CooldownMatrixProps {
   cooldowns: CooldownState[];
+  loading?: boolean;
 }
 
 /**
@@ -18,7 +19,7 @@ interface CooldownMatrixProps {
  * countdown + running "muted" counter per incident, all painted in the
  * signature signal-lime language.
  */
-export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
+export default function CooldownMatrix({ cooldowns, loading = false }: CooldownMatrixProps) {
   const [localCooldowns, setLocalCooldowns] = useState<CooldownState[]>(cooldowns);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
@@ -170,14 +171,14 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
             <span className="live-dot" />
             <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">
-              {totals.activeWindows} active
+              {loading ? "..." : `${totals.activeWindows} active`}
             </span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
             <BellOff className="w-3.5 h-3.5 text-zinc-500" />
             <span className="text-[10px] font-mono text-zinc-450">
               <span className="text-zinc-200 font-bold">
-                {totals.totalSuppressed.toLocaleString()}
+                {loading ? "..." : totals.totalSuppressed.toLocaleString()}
               </span>{" "}
               muted
             </span>
@@ -185,7 +186,23 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
         </div>
       </div>
 
-      {!hasAny ? (
+      {loading ? (
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-pulse">
+          {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((cat) => (
+            <div key={cat} className="rounded-2xl border border-zinc-800/80 bg-[#0c0c0e] p-4 flex flex-col min-h-[200px] gap-3">
+              <div className="flex justify-between items-center mb-2">
+                <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-6 bg-zinc-800 rounded-full animate-pulse" />
+              </div>
+              <div className="rounded-xl bg-[#121215] border border-zinc-800/80 p-3 flex flex-col gap-2.5">
+                <div className="h-3 w-20 bg-zinc-850 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-zinc-850 rounded animate-pulse" />
+                <div className="h-6 w-full bg-zinc-850 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !hasAny ? (
         <div className="relative z-10 border border-dashed border-zinc-800 rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-2 bg-[#09090b]/50">
           <CheckCircle2 className="w-9 h-9 text-zinc-650 mb-1" />
           <p className="text-sm font-semibold text-zinc-300">
