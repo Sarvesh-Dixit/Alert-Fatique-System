@@ -451,8 +451,8 @@ export default function LiveMonitor() {
   );
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 flex-1">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 relative z-10">
         {/* Standardized Header */}
         <PageHeader 
           title="Live Monitor" 
