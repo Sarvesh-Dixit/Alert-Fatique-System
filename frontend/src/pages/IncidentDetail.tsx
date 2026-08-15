@@ -82,7 +82,7 @@ export default function IncidentDetail() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
-      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 flex-1">
         <Link to="/incidents" className="text-zinc-400 text-sm hover:text-zinc-100 transition">← Back to Incidents</Link>
         
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mt-2 mb-6">

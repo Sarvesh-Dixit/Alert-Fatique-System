@@ -192,7 +192,7 @@ export default function Demo() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
-      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 flex-1">
         {/* Page Header */}
         <PageHeader 
           title="Demo Simulator Control Center" 
@@ -207,9 +207,9 @@ export default function Demo() {
             
             {/* Top Ingestion Config & Status Bar */}
             <div className="bg-[#121215] border border-zinc-800/80 rounded-xl p-5 shadow-lg">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                 {/* Left: Event Count Input */}
-                <div className="md:col-span-4 flex items-center gap-3">
+                <div className="lg:col-span-4 flex items-center gap-3">
                   <label className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-400">
                     Events to Ingest
                   </label>
@@ -227,7 +227,7 @@ export default function Demo() {
                 </div>
 
                 {/* Right: Scale & Microservice Info */}
-                <div className="md:col-span-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-zinc-400 border-t md:border-t-0 md:border-l border-zinc-800 md:pl-6">
+                <div className="lg:col-span-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-zinc-400 border-t lg:border-t-0 lg:border-l border-zinc-800 lg:pl-6">
                   <ul className="space-y-1">
                     <li className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -247,7 +247,7 @@ export default function Demo() {
               <h2 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">
                 Available Simulation Scenarios
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {scenarios.map((s) => {
                   const isBusy = busy === s.id;
                   return (
@@ -279,7 +279,7 @@ export default function Demo() {
 
             {/* Live SRE Terminal Window */}
             {logs.length > 0 && (
-              <div className="w-full bg-[#000000] border border-zinc-800 rounded-xl p-4 font-mono text-xs text-zinc-300 shadow-2xl flex flex-col gap-2 overflow-x-hidden">
+              <div className="w-full max-w-full overflow-x-auto font-mono text-xs whitespace-pre-wrap sm:whitespace-pre bg-[#000000] border border-zinc-800 rounded-xl p-4 shadow-2xl flex flex-col gap-2">
                 <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
                   <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
                   {isInjecting && (

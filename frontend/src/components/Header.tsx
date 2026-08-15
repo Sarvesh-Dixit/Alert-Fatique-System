@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { ChevronRight, Play, ChevronDown, Radio, Sparkles } from "lucide-react";
+import { ChevronRight, Play, ChevronDown, Radio, Sparkles, Menu } from "lucide-react";
 import { useTelemetryInjection } from "../context/TelemetryToastContext";
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
   isSidebarCollapsed?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
-export default function Header({ onSidebarToggle, isSidebarCollapsed }: HeaderProps) {
+export default function Header({ onSidebarToggle, isSidebarCollapsed, onMobileMenuToggle }: HeaderProps) {
   const { user, organizations, currentOrg, setCurrentOrg, logout } = useAuth();
   const { setToast } = useTelemetryInjection();
   const navigate = useNavigate();
@@ -37,39 +38,49 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed }: HeaderPr
   };
 
   return (
-    <header className="h-14 border-b border-zinc-800/85 bg-[#121215] shrink-0 flex items-center justify-between px-6 z-10 font-sans">
-      {/* Left side: Sidebar toggle & Breadcrumbs */}
-      <div className="flex items-center gap-4">
+    <header className="h-14 border-b border-zinc-800/85 bg-[#121215] shrink-0 flex items-center justify-between px-4 sm:px-6 z-10 font-sans w-full overflow-hidden">
+      {/* Left side: Hamburger (mobile) / Sidebar toggle & Breadcrumbs */}
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+        {/* Mobile Hamburger toggle */}
+        <button
+          onClick={onMobileMenuToggle}
+          className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 rounded-lg md:hidden cursor-pointer shrink-0"
+          aria-label="Open Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         {isSidebarCollapsed && (
           <button
             onClick={onSidebarToggle}
-            className="text-zinc-400 hover:text-white transition text-xs border border-zinc-800 p-1.5 rounded bg-zinc-900/60 cursor-pointer flex items-center justify-center"
+            className="hidden md:flex text-zinc-400 hover:text-white transition text-xs border border-zinc-800 p-1.5 rounded bg-zinc-900/60 cursor-pointer items-center justify-center shrink-0"
             title="Expand Navigation"
           >
             <Play className="w-3 h-3 fill-current" />
           </button>
         )}
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
-          <span className="hover:text-zinc-200 cursor-pointer transition">Telemetry</span>
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-700" />
-          <span className="hover:text-zinc-200 cursor-pointer transition">{currentOrg?.name || "Evaluator Organization"}</span>
-          <ChevronRight className="w-3.5 h-3.5 text-zinc-700" />
-          <span className="text-emerald-400 font-bold">{getPageTitle()}</span>
+        <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs font-semibold text-zinc-500 min-w-0">
+          <span className="hover:text-zinc-200 cursor-pointer transition hidden sm:inline shrink-0">Telemetry</span>
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-700 hidden sm:inline shrink-0" />
+          <span className="hover:text-zinc-200 cursor-pointer transition truncate max-w-[80px] sm:max-w-none">{currentOrg?.name || "Evaluator Organization"}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-700 shrink-0" />
+          <span className="text-emerald-400 font-bold truncate">{getPageTitle()}</span>
         </div>
       </div>
 
       {/* Right side: Popover controls for Live Filtering, Org Scope Selector, and Profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         
         {/* 1. Live Filtering Popover */}
         <div className="relative">
           <button
             onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-            className="flex items-center gap-1.5 bg-zinc-900/60 hover:bg-[#18181b] border border-zinc-800/80 px-2.5 py-1.5 rounded-md text-[11px] font-semibold text-emerald-400 font-mono tracking-tight shadow-sm cursor-pointer select-none"
+            className="flex items-center gap-1.5 bg-zinc-900/60 hover:bg-[#18181b] border border-zinc-800/80 px-2 py-1.5 sm:px-2.5 rounded-md text-[10px] sm:text-[11px] font-semibold text-emerald-400 font-mono tracking-tight shadow-sm cursor-pointer select-none"
           >
             <Radio className={`w-2.5 h-2.5 shrink-0 ${isFilterActive ? "text-emerald-400 animate-pulse" : "text-amber-450 animate-none"}`} />
-            <span>Live Filtering: {isFilterActive ? "ACTIVE" : "PAUSED"}</span>
+            <span className="hidden sm:inline">Live Filtering: </span>
+            <span>{isFilterActive ? "ACTIVE" : "PAUSED"}</span>
           </button>
 
           {filterDropdownOpen && (
@@ -125,11 +136,11 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed }: HeaderPr
           <div className="relative">
             <button
               onClick={() => setScopeDropdownOpen(!scopeDropdownOpen)}
-              className="flex items-center gap-2 bg-zinc-900/60 hover:bg-[#18181b] border border-zinc-800/80 rounded-md px-2.5 py-1.5 text-xs text-white/85 transition cursor-pointer shadow-sm font-mono"
+              className="flex items-center gap-1.5 sm:gap-2 bg-zinc-900/60 hover:bg-[#18181b] border border-zinc-800/80 rounded-md px-2 py-1.5 sm:px-2.5 text-[10px] sm:text-xs text-white/85 transition cursor-pointer shadow-sm font-mono max-w-[105px] sm:max-w-none"
             >
-              <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Scope:</span>
-              <span className="font-bold text-[#A3E635]">{currentOrg?.name || "Evaluator Organization"}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-white/40" />
+              <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold hidden sm:inline">Scope:</span>
+              <span className="font-bold text-[#A3E635] truncate">{currentOrg?.name || "Evaluator Organization"}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-white/40 shrink-0" />
             </button>
 
             {scopeDropdownOpen && (

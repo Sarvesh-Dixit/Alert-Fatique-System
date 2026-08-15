@@ -24,33 +24,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [metricsExpanded, setMetricsExpanded] = useState(true);
-
-  const activeClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
-      isActive
-        ? "bg-signal/10 text-signal border-l-2 border-signal shadow-sm"
-        : "text-white/65 hover:bg-white/5 hover:text-white"
-    }`;
-
-  const activeSubClass = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-1.5 rounded-md text-[11px] font-medium transition ${
-      isActive ? "text-signal font-bold" : "text-white/40 hover:text-white hover:bg-white/5"
-    }`;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="h-screen flex bg-[#09090b] text-zinc-100 font-sans overflow-hidden">
-      {/* Sleek Vertical Rail Sidebar */}
+    <div className="h-screen flex bg-[#09090b] text-zinc-100 font-sans overflow-hidden relative">
+      {/* Mobile Backdrop Overlay */}
+      {mobileNavOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+
+      {/* Sleek Vertical Rail Sidebar: Slide-over drawer on mobile, static rail on desktop */}
       <aside 
-        className={`${
-          collapsed ? "w-0 overflow-hidden border-none" : "w-64"
-        } shrink-0 bg-[#0c0c0e] border-r border-zinc-800/80 flex flex-col transition-all duration-300`}
+        className={`
+          fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0c0c0e] border-r border-zinc-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0
+          md:relative md:translate-x-0 md:z-auto h-full
+          ${mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          ${collapsed ? "md:w-0 md:overflow-hidden md:border-none" : "md:w-64"}
+        `}
       >
         {/* Sidebar Header */}
         <div className="p-4 flex items-center justify-between border-b border-zinc-800 h-14 shrink-0">
           <div 
             className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity" 
-            onClick={() => navigate("/")}
+            onClick={() => { navigate("/"); setMobileNavOpen(false); }}
           >
             <Radio className="w-5 h-5 text-emerald-400 animate-pulse shrink-0" />
             <div className="flex flex-col">
@@ -61,7 +60,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <button 
-            className="text-zinc-500 hover:text-white transition cursor-pointer"
+            className="hidden md:block text-zinc-500 hover:text-white transition cursor-pointer"
             onClick={() => setCollapsed(true)}
             title="Collapse Sidebar"
           >
@@ -74,6 +73,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Live Monitor */}
           <NavLink
             to="/monitor"
+            onClick={() => setMobileNavOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition border duration-150 ${
                 isActive
@@ -93,6 +93,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Active Incidents */}
           <NavLink 
             to="/incidents" 
+            onClick={() => setMobileNavOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border duration-150 ${
                 isActive && location.pathname.startsWith("/incidents")
@@ -108,6 +109,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Demo Simulator */}
           <NavLink 
             to="/demo" 
+            onClick={() => setMobileNavOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border duration-150 ${
                 isActive
@@ -123,6 +125,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Suppression Rules */}
           <NavLink 
             to="/rules" 
+            onClick={() => setMobileNavOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition border duration-150 ${
                 isActive
@@ -148,7 +151,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <button
-            onClick={() => { logout(); navigate("/"); }}
+            onClick={() => { logout(); navigate("/"); setMobileNavOpen(false); }}
             className="text-zinc-500 hover:text-rose-450 p-1.5 rounded hover:bg-zinc-900 transition shrink-0 cursor-pointer"
             title="Sign Out"
           >
@@ -158,15 +161,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content wrapper */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top Header Bar */}
         <Header 
           onSidebarToggle={() => setCollapsed(false)} 
           isSidebarCollapsed={collapsed} 
+          onMobileMenuToggle={() => setMobileNavOpen(true)}
         />
 
         {/* Child Screen Page Router Container */}
-        <main className="flex-1 overflow-y-auto bg-[#09090b] p-8">
+        <main className="flex-1 overflow-y-auto bg-[#09090b] p-4 sm:p-6 md:p-8">
           {children}
         </main>
       </div>
