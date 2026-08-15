@@ -4,13 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Canvas & surfaces
-        ink: "#0B0C14",        // page canvas
-        panel: "#12141F",      // primary panel
-        panelHi: "#171926",    // elevated panel
-        panelDark: "#0F101A",  // deep panel
-        cardBg: "#12141F",     // alias
-        borderDark: "#252940", // hairline
+                // Canvas & surfaces
+        ink: "#09090b",        // page canvas
+        panel: "#121215",      // primary panel
+        panelHi: "#18181b",    // elevated panel
+        panelDark: "#0c0c0e",  // deep panel
+        cardBg: "#121215",     // alias
+        borderDark: "#27272a", // hairline
 
         // Signature accent — used for suppression / signal-through-noise / primary CTAs
         signal: "#A3E635",
@@ -23,15 +23,15 @@ export default {
         danger: "#F43F5E",  // critical severities (rose)
 
         // Legacy aliases kept for compatibility with existing code
-        activePill: "#23273b",
+        activePill: "#18181b",
         neonCyan: "#38BDF8",
         neonBlue: "#5B63D3",
         neonGreen: "#A3E635", // aliased to signal so existing text-neonGreen adopts lime
         neonYellow: "#F59E0B",
         neonRed: "#F43F5E",
         brandIndigo: "#7C87F7",
-        textMuted: "#C9D3EE",
-        textDark: "#8A93AE",
+        textMuted: "#a1a1aa",
+        textDark: "#71717a",
       },
       fontFamily: {
         sans: ["Inter", "Helvetica Now Text", "system-ui", "sans-serif"],

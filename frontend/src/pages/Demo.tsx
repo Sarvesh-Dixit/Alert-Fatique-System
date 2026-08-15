@@ -219,7 +219,7 @@ export default function Demo() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6 font-sans">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6 font-sans">
       {/* Standard Header */}
       <PageHeader 
         title="Demo Simulator Control Center" 
@@ -236,7 +236,7 @@ export default function Demo() {
         {/* Scenario selection & configuration */}
         <div className="lg:col-span-8 space-y-6">
           {/* Rate config */}
-          <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-5">
+          <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-5">
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-1.5 font-mono">
               <Terminal className="w-4 h-4 text-cyan-400" />
               <span>Ingestion Rate Controller</span>
@@ -244,26 +244,26 @@ export default function Demo() {
             
             <div className="flex flex-col sm:flex-row sm:items-end gap-6">
               <div className="w-full sm:w-64">
-                <label className="label text-[10px] font-bold text-slate-400 uppercase tracking-wider">Events to Ingest</label>
+                <label className="label text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Events to Ingest</label>
                 <div className="relative mt-1">
                   <input
                     type="number"
-                    className="input pl-3 pr-12 bg-slate-950 border border-slate-800 focus:border-[#A3E635]/65 font-mono tracking-tight text-white"
+                    className="input pl-3 pr-12 bg-[#09090b] border border-zinc-800 focus:border-[#A3E635]/65 font-mono tracking-tight text-white"
                     value={count}
                     min={10}
                     max={50}
                     onChange={(e) => setCount(Number(e.target.value))}
                   />
-                  <span className="absolute right-3 top-2 font-mono text-[10px] text-slate-500 uppercase">logs</span>
+                  <span className="absolute right-3 top-2 font-mono text-[10px] text-zinc-500 uppercase">logs</span>
                 </div>
               </div>
               
-              <div className="flex-1 flex flex-col gap-1 text-[11px] text-slate-400 pb-1 leading-normal font-sans">
+              <div className="flex-1 flex flex-col gap-1 text-[11px] text-zinc-400 pb-1 leading-normal font-sans">
                 <div>
-                  • Traffic is distributed across <strong className="text-slate-200">3 simulated microservices</strong>.
+                  • Traffic is distributed across <strong className="text-zinc-200">3 simulated microservices</strong>.
                 </div>
                 <div>
-                  • Recommended scale: <strong className="text-slate-200">30 to 50 logs</strong> to verify cooldown suppression without pipeline overhead.
+                  • Recommended scale: <strong className="text-zinc-200">30 to 50 logs</strong> to verify cooldown suppression without pipeline overhead.
                 </div>
               </div>
             </div>
@@ -278,18 +278,18 @@ export default function Demo() {
                 return (
                   <div 
                     key={s.id} 
-                    className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl flex flex-col justify-between shadow-lg"
+                    className="card bg-[#121215] border border-zinc-800 hover:border-zinc-600 hover:bg-[#18181b] rounded-xl flex flex-col justify-between shadow-lg transition duration-200"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         {getScenarioIcon(s.id)}
                         <h3 className="font-semibold text-white text-xs sm:text-sm capitalize">{s.id.replace(/-/g, " ")}</h3>
                       </div>
-                      <p className="text-slate-400 text-[11.5px] leading-relaxed min-h-[48px]">{s.description}</p>
+                      <p className="text-zinc-400 text-[11.5px] leading-relaxed min-h-[48px]">{s.description}</p>
                     </div>
                     
                     <button 
-                      className="w-full mt-4 px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-400 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5" 
+                      className="w-full mt-4 px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 hover:bg-[#18181b] text-emerald-400 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5" 
                       disabled={!!busy} 
                       onClick={() => run(s.id)}
                     >
@@ -304,8 +304,8 @@ export default function Demo() {
 
           {/* Terminal log output */}
           {logs.length > 0 && (
-            <div className="bg-black/80 border border-slate-800 rounded-xl font-mono text-xs text-slate-300 p-4 shadow-2xl flex flex-col gap-2">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-2 mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+            <div className="bg-black border border-zinc-800 rounded-xl font-mono text-xs text-zinc-300 p-4 shadow-2xl flex flex-col gap-2">
+              <div className="flex justify-between items-center border-b border-zinc-800 pb-2 mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
                 <span>[TELEMETRY HIGHWAY REAL-TIME INGESTION LOGS]</span>
                 {isInjecting && (
                   <span className="text-cyan-400 font-bold animate-pulse font-mono">
@@ -330,52 +330,52 @@ export default function Demo() {
         {/* Results Diagnostic Card on the right */}
         <div className="lg:col-span-4">
           {result ? (
-            <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-5 animate-fade-in space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-5 animate-fade-in space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div>
                   <h2 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-[#A3E635] animate-pulse" />
                     <span>Diagnostic Report</span>
                   </h2>
-                  <p className="text-[9px] text-slate-500 font-mono mt-0.5 capitalize">Scenario: {result.scenario}</p>
+                  <p className="text-[9px] text-zinc-500 font-mono mt-0.5 capitalize">Scenario: {result.scenario}</p>
                 </div>
                 
                 <span className="text-[9px] text-emerald-400 font-mono font-extrabold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">SSE Synced</span>
               </div>
 
               <div className="grid grid-cols-3 gap-2.5 text-center">
-                <div className="p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Logs Ingested</div>
+                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
+                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Logs Ingested</div>
                   <div className="text-sm font-mono font-bold text-white mt-1">{result.events_generated}</div>
                 </div>
-                <div className="p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Threads Formed</div>
+                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
+                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Threads Formed</div>
                   <div className="text-sm font-mono font-bold text-rose-400 mt-1">{result.incidents.length}</div>
                 </div>
-                <div className="p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl">
-                  <div className="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Webhooks</div>
+                <div className="p-2.5 bg-[#09090b]/60 border border-zinc-800 rounded-xl">
+                  <div className="text-[8px] uppercase tracking-wider text-zinc-500 font-bold">Webhooks</div>
                   <div className="text-sm font-mono font-bold text-amber-400 mt-1">{result.notifications_sent}</div>
                 </div>
               </div>
 
               <div className="space-y-2 pt-2">
-                <h3 className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">Correlated Output</h3>
+                <h3 className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-bold">Correlated Output</h3>
                 <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                   {result.incidents.map((i) => (
                     <Link 
                       key={i.id} 
                       to={`/incidents/${i.id}`} 
-                      className="block border border-slate-800 hover:border-slate-700 bg-slate-950/40 rounded-xl p-3.5 transition duration-200 text-left"
+                      className="block border border-zinc-800 hover:border-zinc-700 bg-[#09090b]/40 rounded-xl p-3.5 transition duration-200 text-left"
                     >
                       <div className="flex items-center justify-between gap-4 mb-2">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <SeverityBadge severity={i.severity} />
                           <span className="font-semibold text-white truncate text-xs">{i.title}</span>
                         </div>
-                        <span className="text-[9px] text-slate-500 font-mono shrink-0">#{i.id.slice(-6)}</span>
+                        <span className="text-[9px] text-zinc-500 font-mono shrink-0">#{i.id.slice(-6)}</span>
                       </div>
                       
-                      <div className="text-slate-400 text-[10px] flex flex-wrap gap-x-3 gap-y-1 font-mono tracking-tight">
+                      <div className="text-zinc-400 text-[10px] flex flex-wrap gap-x-3 gap-y-1 font-mono tracking-tight">
                         <span className="text-[#A3E635] font-bold">-{i.events_suppressed} suppressed</span>
                         <span>{i.affected_services} services</span>
                         {i.spike_multiplier > 1 && <span className="text-amber-400 font-bold">{i.spike_multiplier}x spike</span>}
@@ -390,7 +390,7 @@ export default function Demo() {
               </div>
             </div>
           ) : (
-            <div className="card bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/60 rounded-xl p-8 text-center text-slate-500 text-xs italic">
+            <div className="card bg-[#121215] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500 text-xs italic">
               Diagnostic report will generate here when scenario runs...
             </div>
           )}
