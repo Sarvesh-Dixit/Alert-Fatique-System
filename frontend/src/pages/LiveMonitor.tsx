@@ -25,8 +25,8 @@ import CooldownMatrix from "../components/CooldownMatrix";
 import IncidentFeed from "../components/IncidentFeed";
 
 const ACCENT = "#A3E635"; // signature lime
-const CARD = "#12141F";
-const HAIR = "#252940";
+const CARD = "#121215";
+const HAIR = "#27272a";
 
 function Panel({
   className = "",
@@ -358,7 +358,7 @@ export default function LiveMonitor() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6">
       {/* Standardized Header */}
       <PageHeader 
         title="Live Monitor" 
@@ -368,15 +368,15 @@ export default function LiveMonitor() {
       />
 
       {/* Ingestion Trigger Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#121215] border border-zinc-800 rounded-xl">
         <div className="flex items-center gap-3">
           <span className="relative flex h-2 w-2">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isInjecting ? "bg-amber-400" : "bg-emerald-400"} opacity-75`} />
             <span className={`relative inline-flex rounded-full h-2 w-2 ${isInjecting ? "bg-amber-500" : "bg-emerald-500"}`} />
           </span>
           <div className="flex flex-col text-left">
-            <span className="text-xs font-bold text-slate-200">Live Ingestion Highway</span>
-            <span className="text-[10px] text-slate-500 font-mono">
+            <span className="text-xs font-bold text-zinc-200">Live Ingestion Highway</span>
+            <span className="text-[10px] text-zinc-500 font-mono">
               Status: <span className={isInjecting ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>{isInjecting ? "STREAMING..." : "READY"}</span>
             </span>
           </div>
@@ -386,26 +386,26 @@ export default function LiveMonitor() {
           <button
             onClick={() => handleInject("error-burst")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
-            <span>⚡ Inject Error Burst</span>
+            <span>Inject Error Burst</span>
           </button>
           <button
             onClick={() => handleInject("cascading-failure")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-rose-400 fill-rose-400/20" />
-            <span>💥 Cascading Outage</span>
+            <span>Cascading Outage</span>
           </button>
           <button
             onClick={() => handleInject("cpu-spike")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700/80 text-emerald-450 hover:bg-slate-900 text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
-            <span>📈 CPU Load Spike</span>
+            <span>CPU Load Spike</span>
           </button>
         </div>
       </div>
@@ -425,7 +425,7 @@ export default function LiveMonitor() {
               <h3 className="text-white font-bold text-xs uppercase tracking-wider">
                 Live Incident Threads
               </h3>
-              <span className="text-[10px] bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-zinc-800 text-zinc-300 font-mono px-2 py-0.5 rounded-full font-bold">
                 {incidents.length} active
               </span>
             </div>
@@ -446,7 +446,7 @@ export default function LiveMonitor() {
             <div className="absolute -top-24 -left-24 w-[200px] h-[200px] rounded-full pointer-events-none bg-gradient-to-tr from-[#38BDF8]/5 to-transparent blur-2xl" />
 
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
                 Focus Inspector
               </span>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#A3E635]">
@@ -463,7 +463,7 @@ export default function LiveMonitor() {
                     <span className="text-white text-xs font-bold truncate">
                       {highlighted.title}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500 truncate">
+                    <span className="text-[10px] font-mono text-zinc-550 truncate">
                       {highlighted.service ?? "svc:—"} · {highlighted.affected_regions?.[0] ?? "global"}
                     </span>
                   </div>
@@ -489,21 +489,21 @@ export default function LiveMonitor() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-900">
+                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800">
                   <span>Opened {fmtTime(highlighted.first_seen)}</span>
                   <span>{durationLabel(highlighted.first_seen)} ago</span>
                 </div>
 
                 <Link
                   to={`/incidents/${highlighted.id}`}
-                  className="mt-1 flex items-center justify-center gap-2 text-xs font-bold text-slate-950 bg-[#A3E635] hover:bg-[#B7EE6A] rounded-lg py-2.5 transition cursor-pointer"
+                  className="mt-1 flex items-center justify-center gap-2 text-xs font-bold text-black bg-[#A3E635] hover:bg-[#B7EE6A] rounded-lg py-2.5 transition cursor-pointer"
                 >
                   <span>Open workspace details</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </>
             ) : (
-              <div className="text-slate-500 text-xs py-8 text-center italic">
+              <div className="text-zinc-500 text-xs py-8 text-center italic">
                 Select an incident thread from the feed to inspect trace details.
               </div>
             )}
@@ -512,16 +512,16 @@ export default function LiveMonitor() {
           {/* Noisy sources leaderboard */}
           <Panel className="p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
                 Top Noise Outliers
               </span>
-              <span className="text-[10px] font-mono text-slate-500">
+              <span className="text-[10px] font-mono text-zinc-500">
                 Events / Incidents
               </span>
             </div>
 
             {noisySources.length === 0 ? (
-              <div className="text-slate-500 text-xs py-6 text-center italic">
+              <div className="text-zinc-500 text-xs py-6 text-center italic">
                 No active traffic source outliers detected.
               </div>
             ) : (
@@ -541,11 +541,11 @@ export default function LiveMonitor() {
                       >
                         {idx + 1}
                       </span>
-                      <span className="text-slate-200 truncate font-semibold">{row.name}</span>
+                      <span className="text-zinc-200 truncate font-semibold">{row.name}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400 font-mono text-[11px] shrink-0">
+                    <div className="flex items-center gap-2 text-zinc-400 font-mono text-[11px] shrink-0">
                       <span className="text-white font-bold">{fmtCompact(row.events)}</span>
-                      <span className="text-slate-600">·</span>
+                      <span className="text-zinc-650">·</span>
                       <span>{row.incidents} inc</span>
                     </div>
                   </div>

@@ -6,17 +6,17 @@
   color-scheme: dark;
   --signal: #a3e635;
   --signal-soft: #dff7a6;
-  --ink: #0b0c14;
-  --panel: #12141f;
-  --panel-hi: #171926;
-  --hair: #252940;
+  --ink: #09090b;
+  --panel: #121215;
+  --panel-hi: #18181b;
+  --hair: #27272a;
 }
 
 body {
   margin: 0;
   font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   background: var(--ink);
-  color: #c9d3ee;
+  color: #d4d4d8;
 }
 
 /* selection uses signature accent */
@@ -26,7 +26,7 @@ body {
 }
 
 .homepage-heading-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #c9d3ee 55%, #a3e635 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 55%, #a3e635 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -37,7 +37,7 @@ body {
 }
 
 .border-separator-gradient {
-  border-color: rgba(114, 125, 161, 0.15);
+  border-color: rgba(161, 161, 170, 0.15);
 }
 
 /* Scrollbars in the accent language */

@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { useIncidentStream } from "../hooks/useIncidentStream";
 import { EmptyState } from "../ui";
 import PageHeader from "../components/PageHeader";
-import NoiseReductionBanner from "../components/NoiseReductionBanner";
 import IncidentFeed from "../components/IncidentFeed";
 
 const STATUSES = ["", "OPEN", "ACKNOWLEDGED", "RESOLVED", "CLOSED"];
@@ -64,31 +63,31 @@ export default function Incidents() {
   const filtersAction = (
     <div className="flex items-center gap-3">
       <div className="flex flex-col gap-0.5">
-        <span className="text-[9px] text-slate-500 uppercase tracking-widest font-mono font-bold">Status</span>
+        <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-mono font-bold">Status</span>
         <select 
-          className="input w-36 bg-slate-900 border border-slate-800 focus:border-[#A3E635]/65 text-slate-200 text-xs py-1.5" 
+          className="input w-36 bg-[#121215] border border-zinc-800 focus:border-[#A3E635]/65 text-zinc-200 text-xs py-1.5" 
           value={statusFilter} 
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          {STATUSES.map((s) => <option key={s} value={s} className="bg-slate-950">{s || "All Statuses"}</option>)}
+          {STATUSES.map((s) => <option key={s} value={s} className="bg-[#09090b]">{s || "All Statuses"}</option>)}
         </select>
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <span className="text-[9px] text-slate-500 uppercase tracking-widest font-mono font-bold">Severity</span>
+        <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-mono font-bold">Severity</span>
         <select 
-          className="input w-36 bg-slate-900 border border-slate-800 focus:border-[#A3E635]/65 text-slate-200 text-xs py-1.5" 
+          className="input w-36 bg-[#121215] border border-zinc-800 focus:border-[#A3E635]/65 text-zinc-200 text-xs py-1.5" 
           value={severityFilter} 
           onChange={(e) => setSeverityFilter(e.target.value)}
         >
-          {SEVERITIES.map((s) => <option key={s.value} value={s.value} className="bg-slate-950">{s.label}</option>)}
+          {SEVERITIES.map((s) => <option key={s.value} value={s.value} className="bg-[#09090b]">{s.label}</option>)}
         </select>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6 font-sans">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6 font-sans">
       {/* Page Header with filters */}
       <PageHeader 
         title="Incidents Feed" 
@@ -97,22 +96,19 @@ export default function Incidents() {
         description="Browse logical error threads grouped from raw telemetry bursts by the semantic pipeline."
       />
 
-      {/* Noise Reduction KPI banner */}
-      <NoiseReductionBanner kpis={kpis} hasActiveCooldowns={hasActiveCooldowns} />
-
       {/* Main Content Area */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 border-b border-slate-800/80 pb-2">
+        <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-2">
           <h3 className="text-white font-bold text-xs uppercase tracking-wider">
             Correlated Incidents Feed
           </h3>
-          <span className="text-[10px] bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded-full font-bold">
+          <span className="text-[10px] bg-zinc-800 text-zinc-300 font-mono px-2 py-0.5 rounded-full font-bold">
             {incidents.length} shown
           </span>
         </div>
 
         {loading ? (
-          <div className="text-slate-500 text-xs py-16 text-center italic">
+          <div className="text-zinc-500 text-xs py-16 text-center italic">
             Synchronizing incidents feed...
           </div>
         ) : incidents.length === 0 ? (
