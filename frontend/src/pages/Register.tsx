@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Radio, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
 
-export default function Login() {
-  const { login, guestLogin, user } = useAuth();
+export default function Register() {
+  const { register, guestLogin, user } = useAuth();
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
+  const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +24,12 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
+      await register({
+        email,
+        password,
+        full_name: fullName,
+        organization_name: orgName,
+      });
       navigate("/monitor", { replace: true });
     } catch (err: any) {
       setError(err instanceof Error ? err.message : String(err));
@@ -85,11 +92,39 @@ export default function Login() {
 
         <div className="relative flex items-center justify-center">
           <div className="border-t border-zinc-800 w-full" />
-          <span className="bg-[#121215] px-3 text-[11px] font-mono text-zinc-500 uppercase">Or continue with credentials</span>
+          <span className="bg-[#121215] px-3 text-[11px] font-mono text-zinc-500 uppercase">Or register organization</span>
         </div>
 
         {/* Form Fields */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-mono font-medium text-zinc-400 uppercase mb-1.5">
+              Full Name
+            </label>
+            <input
+              type="text"
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Jane SRE"
+              className="w-full bg-[#18181b] border border-zinc-700/80 rounded-lg px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono font-medium text-zinc-400 uppercase mb-1.5">
+              Organization Name
+            </label>
+            <input
+              type="text"
+              required
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              placeholder="Acme Corp"
+              className="w-full bg-[#18181b] border border-zinc-700/80 rounded-lg px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-mono font-medium text-zinc-400 uppercase mb-1.5">
               Work Email
@@ -106,11 +141,12 @@ export default function Login() {
 
           <div>
             <label className="block text-xs font-mono font-medium text-zinc-400 uppercase mb-1.5">
-              Password
+              Password (min 8 chars)
             </label>
             <input
               type="password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
@@ -130,15 +166,15 @@ export default function Login() {
             disabled={loading}
             className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold rounded-lg text-sm transition-all duration-150 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : 'Sign In to Highway'}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin text-zinc-950" /> : 'Register Organization'}
           </button>
         </form>
 
         {/* Footer Switch Link */}
         <div className="text-center text-xs text-zinc-500">
-          Don't have an account?{' '}
-          <Link className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors" to="/register">
-            Register organization
+          Already have an account?{' '}
+          <Link className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors" to="/login">
+            Sign In to Highway
           </Link>
         </div>
       </div>
