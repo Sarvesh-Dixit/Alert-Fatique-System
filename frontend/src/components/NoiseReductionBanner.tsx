@@ -122,10 +122,10 @@ export default function NoiseReductionBanner({
       </div>
 
       {/* Main KPI Columns Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
         
         {/* Hero KPI Card: Noise Reduction Ratio */}
-        <div className="md:col-span-5 flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#A3E635]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#A3E635]/8 transition-all" />
           
           <div className="flex justify-between items-start mb-1">
@@ -142,7 +142,7 @@ export default function NoiseReductionBanner({
             {/* Glow backdrop */}
             <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 blur-xl opacity-80 pointer-events-none rounded-lg" />
             
-            <span className="relative text-4xl sm:text-5xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-[#A3E635]">
+            <span className="relative text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-[#A3E635]">
               {noiseReductionRatio.toFixed(1)}%
             </span>
             <div className="relative flex flex-col mb-1 text-[10px] text-zinc-550 font-mono">
@@ -194,7 +194,7 @@ export default function NoiseReductionBanner({
         </div>
 
         {/* Compression Ratio Ingestion Card */}
-        <div className="md:col-span-4 flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#38BDF8]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#38BDF8]/8 transition-all" />
 
           <div className="flex justify-between items-start mb-1">
@@ -213,20 +213,20 @@ export default function NoiseReductionBanner({
             
             <div className="relative flex items-center gap-3.5 py-1">
               <div className="flex flex-col">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-zinc-150">{rawEvents}</span>
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-zinc-150">{rawEvents}</span>
                 <span className="text-[9px] font-mono text-zinc-500 uppercase">Raw Ingested</span>
               </div>
               
               <ArrowRight className="w-4 h-4 text-zinc-500 animate-pulse shrink-0" />
               
               <div className="flex flex-col">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-[#A3E635]">{incidentThreads}</span>
                 <span className="text-[9px] font-mono text-zinc-405 uppercase">Incident Thread{incidentThreads > 1 ? "s" : ""}</span>
               </div>
             </div>
           </div>
 
-          <div className="text-[10.5px] text-zinc-405 font-sans border-t border-zinc-900/65 pt-1.5 flex items-center justify-between">
+          <div className="text-[10.5px] text-zinc-455 font-sans border-t border-zinc-900/65 pt-1.5 flex items-center justify-between">
             <span>Compression Rate:</span>
             <strong className="text-zinc-200 font-mono">
               {rawEvents} Raw Alerts → {incidentThreads} Thread{incidentThreads > 1 ? "s" : ""}
@@ -235,7 +235,7 @@ export default function NoiseReductionBanner({
         </div>
 
         {/* On-Call Hours Saved Card */}
-        <div className="md:col-span-3 flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-amber-500/5 rounded-full pointer-events-none blur-xl group-hover:bg-amber-500/8 transition-all" />
 
           <div className="flex justify-between items-start mb-1">
@@ -252,7 +252,7 @@ export default function NoiseReductionBanner({
             {/* Glow backdrop */}
             <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/10 to-orange-500/5 blur-xl opacity-60 pointer-events-none rounded-lg" />
             
-            <span className="relative text-3xl font-black font-mono tracking-tight text-amber-300">
+            <span className="relative text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-amber-300">
               {formatTimeSaved(hoursSaved)}
             </span>
             <p className="relative text-[10.5px] text-zinc-400 mt-0.5 leading-tight">

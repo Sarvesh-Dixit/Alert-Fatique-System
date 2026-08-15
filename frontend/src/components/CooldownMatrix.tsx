@@ -197,7 +197,7 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
           </p>
         </div>
       ) : (
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {categories.map((cat) => {
             const items = categorized[cat];
             const theme = THEME[cat];
@@ -227,7 +227,7 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
 
                 {items.length === 0 ? (
                   <div className="flex-grow flex items-center justify-center text-center py-6">
-                    <span className="text-zinc-600 text-[11px] italic">
+                    <span className="text-zinc-650 text-[11px] italic">
                       no suppression
                     </span>
                   </div>
@@ -243,7 +243,7 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
                       return (
                         <div
                           key={cd.incident_id}
-                          className="rounded-xl bg-[#121215] border border-zinc-800/80 p-3 flex flex-col gap-2.5 hover:border-zinc-700 transition"
+                          className="rounded-xl bg-[#121215] border border-zinc-800/80 p-3 flex flex-col gap-2.5 hover:border-zinc-700 transition animate-fade-in"
                         >
                           <div className="flex justify-between items-center gap-2">
                             <span
@@ -267,7 +267,7 @@ export default function CooldownMatrix({ cooldowns }: CooldownMatrixProps) {
                           </span>
 
                           {/* Countdown Timer Pill */}
-                          <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg border font-mono text-xs ${
+                          <div className={`flex items-center justify-between px-2 py-1.5 rounded-lg border font-mono text-[10px] sm:text-xs ${
                             expired 
                               ? "bg-zinc-950/60 border-zinc-850 text-zinc-500" 
                               : "bg-[#A3E635]/10 border-[#A3E635]/25 text-[#DFF7A6] font-bold"

@@ -350,13 +350,13 @@ export const IncidentFeed: React.FC<IncidentFeedProps> = ({
                   isHighlighted 
                     ? 'border-[#A3E635] shadow-[0_0_12px_rgba(163,230,53,0.1)]' 
                     : 'border-zinc-800 hover:border-zinc-700'
-                } rounded-lg p-4 mb-2 flex flex-col md:flex-row md:items-center justify-between gap-4 transition duration-150 cursor-pointer`}
+                } rounded-lg p-4 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition duration-150 cursor-pointer`}
               >
                 {/* Left: Checkbox, Status Dot, Title, Service, Group Badge */}
-                <div className="flex items-center gap-3.5 min-w-0">
+                <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
                   <div 
                     onClick={(e) => e.stopPropagation()} 
-                    className="flex items-center"
+                    className="flex items-center mt-0.5 sm:mt-0"
                   >
                     <input
                       type="checkbox"
@@ -366,19 +366,21 @@ export const IncidentFeed: React.FC<IncidentFeedProps> = ({
                     />
                   </div>
 
-                  {statusDot}
+                  <div className="mt-1.5 sm:mt-0">
+                    {statusDot}
+                  </div>
 
-                  <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <span className="font-semibold text-zinc-100 font-sans text-xs sm:text-sm truncate">
                       {incident.title || incident.summary || `Incident #${incident.id.slice(-6)}`}
                     </span>
                     
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-                      <span className="bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 uppercase font-semibold tracking-wider">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 text-[10px] font-mono">
+                      <span className="bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 uppercase font-semibold tracking-wider self-start sm:self-auto">
                         {incident.service || 'Ingestion Highway'}
                       </span>
                       {count > 1 && (
-                        <span className="text-cyan-400 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                        <span className="text-cyan-400 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20 self-start sm:self-auto">
                           [+{count - 1} duplicate alerts grouped]
                         </span>
                       )}
@@ -387,7 +389,7 @@ export const IncidentFeed: React.FC<IncidentFeedProps> = ({
                 </div>
 
                 {/* Right: Relative Timestamp, AI Trace Score, Severity Badge */}
-                <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 font-mono text-[11px] text-zinc-400">
+                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 font-mono text-[11px] text-zinc-400 w-full sm:w-auto border-t border-zinc-800/40 sm:border-t-0 pt-3 sm:pt-0">
                   <span>{getRelativeTime(incident.last_seen || incident.created_at)}</span>
 
                   <span className="flex items-center gap-1 text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10 font-bold">

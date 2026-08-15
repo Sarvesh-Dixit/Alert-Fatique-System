@@ -359,7 +359,7 @@ export default function LiveMonitor() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
-      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 flex-1">
         {/* Standardized Header */}
         <PageHeader 
           title="Live Monitor" 
@@ -369,7 +369,7 @@ export default function LiveMonitor() {
         />
 
       {/* Ingestion Trigger Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#121215] border border-zinc-800 rounded-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 bg-[#121215] border border-zinc-800 rounded-xl">
         <div className="flex items-center gap-3">
           <span className="relative flex h-2 w-2">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isInjecting ? "bg-amber-400" : "bg-emerald-400"} opacity-75`} />
@@ -383,11 +383,11 @@ export default function LiveMonitor() {
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto">
           <button
             onClick={() => handleInject("error-burst")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
             <span>Inject Error Burst</span>
@@ -395,7 +395,7 @@ export default function LiveMonitor() {
           <button
             onClick={() => handleInject("cascading-failure")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-rose-400 fill-rose-400/20" />
             <span>Cascading Outage</span>
@@ -403,7 +403,7 @@ export default function LiveMonitor() {
           <button
             onClick={() => handleInject("cpu-spike")}
             disabled={isInjecting}
-            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#09090b] border border-zinc-800 hover:border-zinc-700 text-zinc-200 hover:bg-[#18181b] text-xs font-semibold rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
             <span>CPU Load Spike</span>
