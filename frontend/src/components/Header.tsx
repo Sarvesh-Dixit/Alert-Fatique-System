@@ -38,7 +38,7 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed, onMobileMe
   };
 
   return (
-    <header className="h-14 border-b border-zinc-800/85 bg-[#121215] shrink-0 flex items-center justify-between px-4 sm:px-6 z-10 font-sans w-full overflow-hidden">
+    <header className="relative z-40 w-full border-b border-zinc-800/80 bg-[#09090b]/95 backdrop-blur-md px-6 py-4 flex items-center justify-between font-sans shrink-0">
       {/* Left side: Hamburger (mobile) / Sidebar toggle & Breadcrumbs */}
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {/* Mobile Hamburger toggle */}
@@ -86,7 +86,7 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed, onMobileMe
           {filterDropdownOpen && (
             <>
               <div className="fixed inset-0 z-20 cursor-default" onClick={() => setFilterDropdownOpen(false)} />
-              <div className="absolute right-0 mt-2 w-64 bg-[#121215]/95 border border-zinc-800 rounded-lg shadow-xl p-4.5 z-30 font-sans backdrop-blur-md text-left text-zinc-300">
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-zinc-700/80 bg-[#18181b] p-2 text-zinc-100 shadow-2xl z-50 backdrop-blur-none text-left">
                 <div className="font-bold text-white text-xs border-b border-zinc-900 pb-2 mb-2 flex items-center justify-between">
                   <span>AI Telemetry Processor</span>
                   <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold ${
@@ -146,7 +146,7 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed, onMobileMe
             {scopeDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-20 cursor-default" onClick={() => setScopeDropdownOpen(false)} />
-                <div className="absolute right-0 mt-2 w-56 bg-[#121215]/95 border border-zinc-800 rounded-lg shadow-xl py-1 z-30 font-sans backdrop-blur-md">
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-zinc-700/80 bg-[#18181b] p-2 text-zinc-100 shadow-2xl z-50 backdrop-blur-none">
                   <div className="px-3 py-1.5 border-b border-zinc-900 text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
                     Select Scope
                   </div>
@@ -193,7 +193,7 @@ export default function Header({ onSidebarToggle, isSidebarCollapsed, onMobileMe
                 className="fixed inset-0 z-20 cursor-default" 
                 onClick={() => setProfileDropdownOpen(false)} 
               />
-              <div className="absolute right-0 mt-2 w-48 bg-[#121215]/95 border border-zinc-800 rounded-lg shadow-xl py-1 z-30 font-sans backdrop-blur-md">
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-zinc-700/80 bg-[#18181b] p-2 text-zinc-100 shadow-2xl z-50 backdrop-blur-none">
                 <div className="px-4 py-2 border-b border-zinc-900 text-left">
                   <div className="text-xs text-white font-semibold truncate">{user?.full_name || "Guest Evaluator"}</div>
                   <div className="text-[10px] text-zinc-500 truncate">{user?.email || "evaluator@local.host"}</div>

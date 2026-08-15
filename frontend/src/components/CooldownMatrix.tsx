@@ -140,7 +140,7 @@ export default function CooldownMatrix({ cooldowns, loading = false }: CooldownM
   const hasAny = localCooldowns.length > 0;
 
   return (
-    <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 flex flex-col gap-5 relative overflow-hidden backdrop-blur-md">
+    <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 sm:p-7 flex flex-col gap-6 relative overflow-hidden backdrop-blur-md shadow-xl">
       {/* signature glow */}
       <div
         className="absolute -top-24 -right-24 w-[280px] h-[280px] rounded-full pointer-events-none"
@@ -187,9 +187,9 @@ export default function CooldownMatrix({ cooldowns, loading = false }: CooldownM
       </div>
 
       {loading ? (
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-pulse">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 animate-pulse">
           {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((cat) => (
-            <div key={cat} className="rounded-2xl border border-zinc-800/80 bg-[#0c0c0e] p-4 flex flex-col min-h-[200px] gap-3">
+            <div key={cat} className="rounded-2xl border border-zinc-800/80 bg-[#0c0c0e] p-5 flex flex-col min-h-[200px] gap-3">
               <div className="flex justify-between items-center mb-2">
                 <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse" />
                 <div className="h-4 w-6 bg-zinc-800 rounded-full animate-pulse" />
@@ -214,7 +214,7 @@ export default function CooldownMatrix({ cooldowns, loading = false }: CooldownM
           </p>
         </div>
       ) : (
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           {categories.map((cat) => {
             const items = categorized[cat];
             const theme = THEME[cat];
@@ -224,7 +224,7 @@ export default function CooldownMatrix({ cooldowns, loading = false }: CooldownM
             return (
               <div
                 key={cat}
-                className={`rounded-2xl border ${theme.badgeBorder} bg-[#0c0c0e] p-4 flex flex-col min-h-[200px]`}
+                className={`rounded-2xl border ${theme.badgeBorder} bg-[#0c0c0e] p-5 flex flex-col min-h-[200px]`}
               >
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2">

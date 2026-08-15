@@ -18,7 +18,7 @@ export default function NoiseReductionBanner({
   setRange,
   loading = false
 }: NoiseReductionBannerProps) {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   // Use dynamic values from API if present, otherwise fallback to standard values requested
   const noiseReductionRatio = kpis?.noise_reduction_ratio || 97.0;
@@ -70,7 +70,7 @@ export default function NoiseReductionBanner({
   }, [range, noiseReductionRatio]);
 
   return (
-    <div className="relative font-sans">
+    <div className="relative bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 sm:p-7 space-y-6 shadow-xl font-sans overflow-hidden">
       {/* Decorative Grid Lines */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f23_1px,transparent_1px),linear-gradient(to_bottom,#1f1f23_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-35" />
 
@@ -92,43 +92,43 @@ export default function NoiseReductionBanner({
           </div>
         </div>
 
-        {/* Interactive Judge Tooltip Trigger */}
-        <div className="relative">
-          <button
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-            onClick={() => setShowTooltip(!showTooltip)}
-            className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-zinc-400 hover:text-white bg-[#09090b]/60 border border-zinc-850 hover:border-zinc-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
+        {/* Judge Guide Popover */}
+        <div className="relative inline-block">
+          <button 
+            onClick={() => setShowGuide(!showGuide)}
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/80 bg-[#18181b] px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-[#A3E635]" />
+            <HelpCircle className="w-3.5 h-3.5 text-emerald-400"/>
             <span>Judge Guide: Deduplication Stack</span>
           </button>
 
-          {showTooltip && (
-            <div className="absolute right-0 bottom-[110%] md:bottom-auto md:top-[115%] w-80 p-4 rounded-xl bg-[#09090b]/95 border border-zinc-800 text-[11.5px] text-zinc-300 shadow-2xl z-50 backdrop-blur-md animate-fade-in leading-relaxed">
-              <div className="font-bold text-white mb-1.5 flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-[#A3E635] fill-[#A3E635]/25" />
-                <span>GPTrace Semantic Clustering Stack</span>
+          {showGuide && (
+            <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 rounded-xl border border-zinc-700 bg-[#18181b] p-5 text-xs text-zinc-200 shadow-2xl z-50 space-y-3">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                <span className="font-semibold text-zinc-100 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400"/>
+                  AI Noise Deduplication Stack
+                </span>
+                <button onClick={() => setShowGuide(false)} className="text-zinc-400 hover:text-zinc-200">✕</button>
               </div>
-              <p className="mb-2">
-                1. <strong>Vector Embeddings:</strong> Exception stack traces are mapped to high-dimensional embedding space using semantic encoders.
+              <p className="leading-relaxed text-zinc-300">
+                Our real-time pipeline groups high-frequency error bursts into a single actionable incident thread using:
               </p>
-              <p className="mb-2">
-                2. <strong>Cosine Clustering:</strong> Errors sharing <code className="text-[#A3E635] bg-[#A3E635]/10 px-1 py-0.5 rounded font-mono">≥ 0.88 similarity</code> collapse instantly into a single parent thread.
-              </p>
-              <p>
-                3. <strong>Cooldown Windows:</strong> High-frequency rate suppression silences redundant telemetry bursts during active outages.
-              </p>
+              <ul className="space-y-1.5 text-zinc-400 list-disc pl-4">
+                <li><strong className="text-zinc-200">Semantic Cosine Clustering:</strong> Groups stack traces with similarity &ge; 0.88.</li>
+                <li><strong className="text-zinc-200">Automated Cooldown Matrix:</strong> Suppresses redundant notifications during active rate storms.</li>
+                <li><strong className="text-zinc-200">Dynamic Score Aggregation:</strong> Computes aggregate incident confidence without DB lock contention.</li>
+              </ul>
             </div>
           )}
         </div>
       </div>
 
       {/* Main KPI Columns Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch relative z-10">
         
         {/* Hero KPI Card: Noise Reduction Ratio */}
-        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="bg-[#18181b]/90 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#A3E635]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#A3E635]/8 transition-all" />
           
           <div className="flex justify-between items-start mb-1">
@@ -207,7 +207,7 @@ export default function NoiseReductionBanner({
         </div>
 
         {/* Compression Ratio Ingestion Card */}
-        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="bg-[#18181b]/90 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#38BDF8]/5 rounded-full pointer-events-none blur-xl group-hover:bg-[#38BDF8]/8 transition-all" />
 
           <div className="flex justify-between items-start mb-1">
@@ -260,7 +260,7 @@ export default function NoiseReductionBanner({
         </div>
 
         {/* On-Call Hours Saved Card */}
-        <div className="flex flex-col justify-between p-4.5 bg-[#09090b]/40 border border-zinc-800/60 rounded-xl hover:border-zinc-700 hover:bg-[#09090b]/60 transition group relative overflow-hidden">
+        <div className="bg-[#18181b]/90 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-28 h-28 bg-amber-500/5 rounded-full pointer-events-none blur-xl group-hover:bg-amber-500/8 transition-all" />
 
           <div className="flex justify-between items-start mb-1">
