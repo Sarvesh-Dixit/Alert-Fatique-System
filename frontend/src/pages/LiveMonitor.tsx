@@ -358,14 +358,15 @@ export default function LiveMonitor() {
   );
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6">
-      {/* Standardized Header */}
-      <PageHeader 
-        title="Live Monitor" 
-        badge="REAL-TIME" 
-        actions={rangeSelector}
-        description="Real-time incident throughput, automated suppression windows, and HDFS hot spots."
-      />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+        {/* Standardized Header */}
+        <PageHeader 
+          title="Live Monitor" 
+          badge="REAL-TIME" 
+          actions={rangeSelector}
+          description="Real-time incident throughput, automated suppression windows, and HDFS hot spots."
+        />
 
       {/* Ingestion Trigger Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#121215] border border-zinc-800 rounded-xl">
@@ -554,6 +555,7 @@ export default function LiveMonitor() {
             )}
           </Panel>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -188,14 +188,15 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 space-y-6 font-sans">
-      <PageHeader 
-        title="Suppression Rules Config" 
-        badge="CONFIGURATION" 
-        description="Fine-tune cosine thresholds and live escalation cooldown locks for the anomaly processor cluster."
-      />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6 space-y-6 flex-1">
+        <PageHeader 
+          title="Suppression Rules Config" 
+          badge="CONFIGURATION" 
+          description="Fine-tune cosine thresholds and live escalation cooldown locks for the anomaly processor cluster."
+        />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Span: Suppression Rules Table */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -449,6 +450,7 @@ export default function Settings() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
